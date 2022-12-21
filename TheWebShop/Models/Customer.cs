@@ -16,7 +16,11 @@ namespace TheWebShop.Models
         public int CityId { get; set; }
         public string Email { get; set; }
         public int PhoneNumber { get; set; }
-        public DateOnly DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
         public int CreditCard { get; set; }
+
+        public virtual City City { get; set; }
+        public virtual ICollection<Order> Orders { get; set; }
+
     }
 }
