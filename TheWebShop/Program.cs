@@ -7,14 +7,14 @@ namespace TheWebShop
     {
         static void Main(string[] args)
         {
-            using var db = new TheWebShopContext();
-            foreach (var p in db.Products.Include(c => c.Category))
-            {
-                Console.WriteLine(p.Name + " - " + p.Category.Name);
-            }
-            
-            //Managing.RunTheWebShop();
+            // Test för att se product plus kategori
+            //using var db = new TheWebShopContext();
+            //foreach (var p in db.Products.Include(c => c.Category))
+            //{
+            //    Console.WriteLine(p.Name + " - " + p.Category.Name);
+            //}
 
+            Managing.RunTheWebShop();
         }
     }
 }
