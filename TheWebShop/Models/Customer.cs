@@ -15,9 +15,9 @@ namespace TheWebShop.Models
         public int ZipCode { get; set; }
         public int CityId { get; set; }
         public string Email { get; set; }
-        public int PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public int CreditCard { get; set; }
+        public string CreditCard { get; set; }
 
         public virtual City City { get; set; }
         public virtual ICollection<Order> Orders { get; set; }

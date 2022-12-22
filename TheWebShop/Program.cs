@@ -1,4 +1,5 @@
-﻿using TheWebShop.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using TheWebShop.Models;
 
 namespace TheWebShop
 {
@@ -6,7 +7,14 @@ namespace TheWebShop
     {
         static void Main(string[] args)
         {
-            Managing.RunTheWebShop();
+            using var db = new TheWebShopContext();
+            foreach (var p in db.Products.Include(c => c.Category))
+            {
+                Console.WriteLine(p.Name + " - " + p.Category.Name);
+            }
+            
+            //Managing.RunTheWebShop();
+
         }
     }
 }
