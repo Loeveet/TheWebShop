@@ -19,6 +19,7 @@ namespace TheWebShop.Models
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
+        public DbSet<Cart> Carts { get; set; }
 
 
 

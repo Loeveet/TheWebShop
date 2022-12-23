@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheWebShop.Models;
 
@@ -11,9 +12,10 @@ using TheWebShop.Models;
 namespace TheWebShop.Migrations
 {
     [DbContext(typeof(TheWebShopContext))]
-    partial class TheWebShopContextModelSnapshot : ModelSnapshot
+    [Migration("20221223095926_CartInit")]
+    partial class CartInit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
