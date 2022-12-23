@@ -147,11 +147,11 @@ namespace TheWebShop
                             Console.WriteLine($"[{s.Id}] {s.Name}");
                         }
                         int supplierId = 0;
-                        while (!exitLoop) 
+                        while (!exitLoop)
                         {
                             Console.Write("Ange id på leverantör: ");
                             var input4 = Console.ReadLine();
-                            
+
                             while (!int.TryParse(input4, out supplierId))
                             {
                                 Console.WriteLine("Felaktig inmatning, försök igen");
@@ -200,75 +200,131 @@ namespace TheWebShop
 
 
 
-                        _dbContext.Products.Add(new Product { Name = name, Price = price, DetailedInfo = detailedInfo, Quantity = quantity,
-                        CategoryId = categoryId, SupplierId = supplierId, ChosenProduct = chosenProduct == "ja" ? true : false});
+                        _dbContext.Products.Add(new Product
+                        {
+                            Name = name,
+                            Price = price,
+                            DetailedInfo = detailedInfo,
+                            Quantity = quantity,
+                            CategoryId = categoryId,
+                            SupplierId = supplierId,
+                            ChosenProduct = chosenProduct == "ja" ? true : false
+                        });
                         _dbContext.SaveChanges();
 
 
-                       
+
                         break;
                     case '2':
-                        
-                        //Console.WriteLine("Ange id på staden du vill ta bort");
-                        //var input2 = Console.ReadLine();
 
-                        //// TODO: Gör till egen metod
-                        //int id2;
-                        //while (!int.TryParse(input2, out id2))
-                        //{
-                        //    Console.WriteLine("Felaktig inmatning, försök igen");
-                        //    input2 = Console.ReadLine();
-                        //}
+                        Console.WriteLine("Ange id på produkten du vill ta bort");
+                        var input2 = Console.ReadLine();
+                        int id2;
+                        while (!int.TryParse(input2, out id2))
+                        {
+                            Console.WriteLine("Felaktig inmatning, försök igen");
+                            input2 = Console.ReadLine();
+                        }
 
-                        //var city = _dbContext.Cities.Where(x => x.Id == id2).FirstOrDefault();
-                        //if (city is not null)
-                        //{
-                        //    Console.WriteLine($"Är du säker på att du vill radera {city.Name} med id {city.Id}?");
-                        //    Console.WriteLine("[J] för ja");
-                        //    Console.WriteLine("[N] för nej");
-                        //    var answer = Console.ReadKey(true).KeyChar;
-                        //    switch (answer)
-                        //    {
-                        //        case 'J':
-                        //        case 'j':
-                        //            _dbContext.Cities.Remove(city);
-                        //            _dbContext.SaveChanges();
-                        //            break;
-                        //        default:
-                        //            Console.WriteLine("Du valde att inte ta bort staden. Tryck valfri tangent");
-                        //            Console.ReadKey(true);
-                        //            break;
-                        //    }
-                        //}
-                        //else
-                        //{
-                        //    Console.WriteLine("Staden fanns ej. Tryck valfri tangent");
-                        //    Console.ReadKey(true);
-                        //}
+                        var product2 = _dbContext.Products.Where(x => x.Id == id2).FirstOrDefault();
+                        if (product2 is not null)
+                        {
+                            Console.WriteLine($"Är du säker på att du vill radera {product2.Name} med id {product2.Id}?");
+                            Console.WriteLine("[J] för ja");
+                            Console.WriteLine("[N] för nej");
+                            var answer = Console.ReadKey(true).KeyChar;
+
+                            if (answer == 'j' || answer == 'J')
+                            {
+                                _dbContext.Products.Remove(product2);
+                                _dbContext.SaveChanges();
+                            }
+                            else
+                            {
+                                Console.WriteLine("Du valde att inte ta bort produkten. Tryck valfri tangent");
+                                Console.ReadKey(true);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Staden fanns ej. Tryck valfri tangent");
+                            Console.ReadKey(true);
+                        }
                         break;
                     case '3':
-                        //Console.WriteLine("Ange id på staden du vill ändra");
-                        //var input3 = Console.ReadLine();
+                        Console.WriteLine("Ange id på den produkten du vill ändra");
+                        var input3 = Console.ReadLine();
 
-                        //int id3;
-                        //while (!int.TryParse(input3, out id3))
-                        //{
-                        //    Console.WriteLine("Felaktig inmatning, försök igen");
-                        //    input3 = Console.ReadLine();
-                        //}
+                        int id3;
+                        while (!int.TryParse(input3, out id3))
+                        {
+                            Console.WriteLine("Felaktig inmatning, försök igen");
+                            input3 = Console.ReadLine();
+                        }
 
-                        //var city2 = _dbContext.Cities.Where(x => x.Id == id3).FirstOrDefault();
-                        //if (city2 is not null)
-                        //{
-                        //    Console.WriteLine($"Ange nytt namn på \"{city2.Name}\"");
-                        //    city2.Name = Console.ReadLine();
-                        //    _dbContext.SaveChanges();
-                        //}
-                        //else
-                        //{
-                        //    Console.WriteLine("Staden fanns ej. Tryck valfri tangent");
-                        //    Console.ReadKey(true);
-                        //}
+                        var product3 = _dbContext.Products.Where(x => x.Id == id3).FirstOrDefault();
+                        if (product3 is not null)
+                        {
+                            Console.WriteLine($"Ange vad du vill ändra på");
+                            Console.WriteLine("[N]amn");
+                            Console.WriteLine("[P]ris");
+                            Console.WriteLine("[B]eskrivning");
+                            Console.WriteLine("[A]ntal");
+                            Console.WriteLine("[U]tvald");
+
+                            var answer2 = Console.ReadKey(true).KeyChar;
+                            switch (answer2)
+                            {
+                                case 'N':
+                                case 'n':
+                                    Console.Write("Ange nytt namn: ");
+                                    product3.Name = Console.ReadLine();
+                                    _dbContext.SaveChanges();
+                                    break;
+                                case 'P':
+                                case 'p':
+                                    Console.WriteLine("Nuvarande pris: " + product3.Price);
+                                    Console.Write("Ange nytt pris: ");
+                                    product3.Price = Convert.ToInt32(Console.ReadLine());
+                                    _dbContext.SaveChanges();
+                                    break;
+                                case 'B':
+                                case 'b':
+                                    Console.WriteLine("Nuvarande beskrivning: " + product3.DetailedInfo);
+                                    Console.Write("Ange ny beskrivning: ");
+                                    product3.DetailedInfo = Console.ReadLine();
+                                    _dbContext.SaveChanges();
+                                    break;
+                                case 'A':
+                                case 'a':
+                                    Console.WriteLine("Nuvarande antal: " + product3.Quantity);
+                                    Console.Write("Ange nytt antal: ");
+                                    product3.Quantity = Convert.ToInt32(Console.ReadLine());
+                                    _dbContext.SaveChanges();
+                                    break;
+                                case 'U':
+                                case 'u':
+                                    Console.Write(product3.Name + " är ");
+                                    Console.WriteLine(product3.ChosenProduct == true ? "utvald produkt" : "ej utvald produkt");
+                                    Console.Write("Vill du ändra utvald produkt?: ");
+                                    var chosenProduct1 = Console.ReadLine().ToLower();
+                                    if (chosenProduct1 == "ja")
+                                    {
+                                        product3.ChosenProduct = !product3.ChosenProduct;
+                                        _dbContext.SaveChanges();
+                                    }
+                                    break;
+                                default:
+                                    Console.WriteLine("Du valde att inte ändra info om produkten. Tryck valfri tangent");
+                                    Console.ReadKey(true);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Produkten fanns ej. Tryck valfri tangent");
+                            Console.ReadKey(true);
+                        }
                         break;
                     case '0':
                         productLoop = false;
@@ -331,13 +387,13 @@ namespace TheWebShop
                             Console.WriteLine("Ange ny stad");
                             var name = Console.ReadLine();
                             _dbContext.Cities.Add(new City { Name = name, CountryId = id });
-                            _dbContext.SaveChanges();                           
+                            _dbContext.SaveChanges();
                         }
                         else
                         {
                             Console.WriteLine("Landet fanns ej. Tryck valfri tangent");
                             Console.ReadKey(true);
-                        }                  
+                        }
                         break;
                     case '2':
                         // Klar
@@ -411,7 +467,7 @@ namespace TheWebShop
             }
         }
 
-        private static void Countries() 
+        private static void Countries()
         {
             var countryLoop = true;
             while (countryLoop)
