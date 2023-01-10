@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheWebShop.Models;
 
@@ -11,9 +12,10 @@ using TheWebShop.Models;
 namespace TheWebShop.Migrations
 {
     [DbContext(typeof(TheWebShopContext))]
-    partial class TheWebShopContextModelSnapshot : ModelSnapshot
+    [Migration("20230110082123_changedConstraint")]
+    partial class changedConstraint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -325,13 +327,13 @@ namespace TheWebShop.Migrations
                     b.HasOne("TheWebShop.Models.Cart", null)
                         .WithMany()
                         .HasForeignKey("CartsId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheWebShop.Models.Product", null)
                         .WithMany()
                         .HasForeignKey("ProductsId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
@@ -340,7 +342,7 @@ namespace TheWebShop.Migrations
                     b.HasOne("TheWebShop.Models.Customer", "Customer")
                         .WithMany("Carts")
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Customer");
@@ -351,7 +353,7 @@ namespace TheWebShop.Migrations
                     b.HasOne("TheWebShop.Models.Country", "Country")
                         .WithMany("Cities")
                         .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Country");
@@ -362,7 +364,7 @@ namespace TheWebShop.Migrations
                     b.HasOne("TheWebShop.Models.City", "City")
                         .WithMany("Customers")
                         .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("City");
@@ -373,19 +375,19 @@ namespace TheWebShop.Migrations
                     b.HasOne("TheWebShop.Models.Customer", "Customer")
                         .WithMany("Orders")
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheWebShop.Models.Freight", "Freight")
                         .WithMany("Orders")
                         .HasForeignKey("FreightId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheWebShop.Models.PaymentMethod", "PaymentMethod")
                         .WithMany("Orders")
                         .HasForeignKey("PaymentMethodId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Customer");
@@ -400,13 +402,13 @@ namespace TheWebShop.Migrations
                     b.HasOne("TheWebShop.Models.Order", "Order")
                         .WithMany("OrderDetails")
                         .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheWebShop.Models.Product", "Product")
                         .WithMany("OrderDetails")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -419,13 +421,13 @@ namespace TheWebShop.Migrations
                     b.HasOne("TheWebShop.Models.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("TheWebShop.Models.Supplier", "Supplier")
                         .WithMany("Products")
                         .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
