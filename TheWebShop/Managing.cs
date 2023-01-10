@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using TheWebShop.Models;
@@ -10,8 +13,6 @@ namespace TheWebShop
 {
     internal class Managing
     {
-        private static readonly TheWebShopContext _dbContext = new();
-
         public static void RunTheWebShop()
         {
             var loop = true;
@@ -49,6 +50,7 @@ namespace TheWebShop
 
         private static void Customer()
         {
+            using var dbContext = new TheWebShopContext();
             var customerLoop = true;
             while (customerLoop)
             {
@@ -57,7 +59,7 @@ namespace TheWebShop
                 Console.WriteLine("Välkommen till Webbshoppen!\n");
 
                 Console.WriteLine("Utvalda produkter:");
-                var chosenProducts = _dbContext.Products
+                var chosenProducts = dbContext.Products
                     .Where(x => x.ChosenProduct)
                     .ToList();
 
@@ -66,7 +68,7 @@ namespace TheWebShop
                     var randomized = Randomize(chosenProducts)
                         .Take(3);
 
-                    Console.WriteLine($"Id\tPris Namn");
+                    Console.WriteLine($"Id\tPris \t Namn");
                     foreach (var product in randomized)
                     {
                         Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
@@ -74,37 +76,28 @@ namespace TheWebShop
                 }
                 else
                 {
-                    Console.WriteLine($"Id\tPris Namn");
+                    Console.WriteLine($"Id\tPris \t Namn");
                     foreach (var product in chosenProducts)
                     {
                         Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
                     }
                 }
-
-
-                // Här är vi
-                Console.WriteLine("[A]dmin");
-                Console.WriteLine("[K]under");
-                Console.WriteLine("[L]ämna TheWebShop");
-
-                var choice = Console.ReadKey(true).KeyChar;
-                switch (choice)
+                Console.WriteLine();
+                Console.Write("Ange text för att fritextsöka, annars ange [0]: ");
+                string search = Console.ReadLine();
+                Console.WriteLine("Kategorier");
+                foreach (var c in dbContext.Categories
+                    .Include(x => x.Products)
+                    .Where(x => x.Products.Count > 0))
                 {
-                    case 'A':
-                    case 'a':
-                        Admin();
-                        break;
-                    case 'K':
-                    case 'k':
-                        Customer();
-                        break;
-                    case 'L':
-                    case 'l':
-                        customerLoop = false;
-                        break;
-                    default:
-                        break;
+                    Console.WriteLine($"[{c.Id}] {c.Name}");
+                    foreach (var item in c.Products)
+                    {
+                        Console.WriteLine($"\t{item.Name}");
+                    }
                 }
+
+                Console.ReadKey();
             }
         }
 
@@ -213,13 +206,15 @@ namespace TheWebShop
 
         private static void FreightMethods()
         {
+            using var dbContext = new TheWebShopContext();
             var freightLoop = true;
             while (freightLoop)
             {
                 Console.Clear();
 
+
                 Console.WriteLine($"Id Namn\tPris");
-                foreach (var freight in _dbContext.Freights)
+                foreach (var freight in dbContext.Freights)
                 {
                     Console.WriteLine($"{freight.Id} {freight.Name}\t{freight.Price}");
                 }
@@ -239,8 +234,8 @@ namespace TheWebShop
                         var name = Console.ReadLine();
                         Console.WriteLine("Ange pris för " + name);
                         int price = Convert.ToInt32(Console.ReadLine());
-                        _dbContext.Freights.Add(new Freight { Name = name, Price = price });
-                        _dbContext.SaveChanges();
+                        dbContext.Freights.Add(new Freight { Name = name, Price = price });
+                        dbContext.SaveChanges();
                         break;
                     case '2':
                         // Klar
@@ -253,7 +248,7 @@ namespace TheWebShop
                             input = Console.ReadLine();
                         }
 
-                        var freight = _dbContext.Freights.Where(x => x.Id == id).FirstOrDefault();
+                        var freight = dbContext.Freights.Where(x => x.Id == id).FirstOrDefault();
                         if (freight is not null)
                         {
                             Console.WriteLine($"Är du säker på att du vill radera fraktmetoden {freight.Name} med id {freight.Id}?");
@@ -264,8 +259,8 @@ namespace TheWebShop
                             {
                                 case 'J':
                                 case 'j':
-                                    _dbContext.Freights.Remove(freight);
-                                    _dbContext.SaveChanges();
+                                    dbContext.Freights.Remove(freight);
+                                    dbContext.SaveChanges();
                                     break;
                                 default:
                                     Console.WriteLine("Du valde att inte ta bort fraktmetoden. Tryck valfri tangent");
@@ -290,7 +285,7 @@ namespace TheWebShop
                             input2 = Console.ReadLine();
                         }
 
-                        var freight2 = _dbContext.Freights.Where(x => x.Id == id2).FirstOrDefault();
+                        var freight2 = dbContext.Freights.Where(x => x.Id == id2).FirstOrDefault();
                         if (freight2 is not null)
                         {
                             Console.WriteLine($"Vill du ändra på namn \"{freight2.Name}\" eller pris?");
@@ -303,14 +298,14 @@ namespace TheWebShop
                                 case 'n':
                                     Console.WriteLine("Ange nytt namn");
                                     freight2.Name = Console.ReadLine();
-                                    _dbContext.SaveChanges();
+                                    dbContext.SaveChanges();
                                     break;
                                 case 'P':
                                 case 'p':
                                     Console.WriteLine("Nuvarande pris: " + freight2.Price);
                                     Console.WriteLine("Ange nytt pris");
                                     freight2.Price = Convert.ToInt32(Console.ReadLine());
-                                    _dbContext.SaveChanges();
+                                    dbContext.SaveChanges();
                                     break;
                                 default:
                                     Console.WriteLine("Du valde att ändra fraktmetoden. Tryck valfri tangent");
@@ -330,18 +325,20 @@ namespace TheWebShop
                     default:
                         break;
                 }
+
             }
         }
 
         private static void PaymentMethods()
         {
+            using var dbContext = new TheWebShopContext();
             var paymentLoop = true;
             while (paymentLoop)
             {
                 Console.Clear();
 
                 Console.WriteLine($"Id Namn");
-                foreach (var pm in _dbContext.PaymentMethods)
+                foreach (var pm in dbContext.PaymentMethods)
                 {
                     Console.WriteLine($"{pm.Id} {pm.Name}");
                 }
@@ -359,8 +356,8 @@ namespace TheWebShop
                         // Klar
                         Console.WriteLine("Ange namn på ny betalmetod");
                         var name = Console.ReadLine();
-                        _dbContext.PaymentMethods.Add(new PaymentMethod { Name = name });
-                        _dbContext.SaveChanges();
+                        dbContext.PaymentMethods.Add(new PaymentMethod { Name = name });
+                        dbContext.SaveChanges();
                         break;
                     case '2':
                         // Klar
@@ -373,7 +370,7 @@ namespace TheWebShop
                             input = Console.ReadLine();
                         }
 
-                        var paymentMethod = _dbContext.PaymentMethods.Where(x => x.Id == id).FirstOrDefault();
+                        var paymentMethod = dbContext.PaymentMethods.Where(x => x.Id == id).FirstOrDefault();
                         if (paymentMethod is not null)
                         {
                             Console.WriteLine($"Är du säker på att du vill radera {paymentMethod.Name} med id {paymentMethod.Id}?");
@@ -384,8 +381,8 @@ namespace TheWebShop
                             {
                                 case 'J':
                                 case 'j':
-                                    _dbContext.PaymentMethods.Remove(paymentMethod);
-                                    _dbContext.SaveChanges();
+                                    dbContext.PaymentMethods.Remove(paymentMethod);
+                                    dbContext.SaveChanges();
                                     break;
                                 default:
                                     Console.WriteLine("Du valde att inte ta bort betalmetoden. Tryck valfri tangent");
@@ -410,12 +407,12 @@ namespace TheWebShop
                             input2 = Console.ReadLine();
                         }
 
-                        var paymentMethod2 = _dbContext.PaymentMethods.Where(x => x.Id == id2).FirstOrDefault();
+                        var paymentMethod2 = dbContext.PaymentMethods.Where(x => x.Id == id2).FirstOrDefault();
                         if (paymentMethod2 is not null)
                         {
                             Console.WriteLine($"Ange nytt namn på \"{paymentMethod2.Name}\"");
                             paymentMethod2.Name = Console.ReadLine();
-                            _dbContext.SaveChanges();
+                            dbContext.SaveChanges();
                         }
                         else
                         {
@@ -434,6 +431,7 @@ namespace TheWebShop
 
         private static void Products()
         {
+            using var dbContext = new TheWebShopContext();
             var exitLoop = false;
             var productLoop = true;
             while (productLoop)
@@ -441,7 +439,7 @@ namespace TheWebShop
                 Console.Clear();
 
                 Console.WriteLine($"Id Utvald\tNamn");
-                foreach (var product in _dbContext.Products)
+                foreach (var product in dbContext.Products)
                 {
                     Console.WriteLine($"{product.Id} {product.ChosenProduct}\t\t{product.Name}");
                 }
@@ -458,7 +456,7 @@ namespace TheWebShop
                     case '1':
                         Console.Clear();
                         // Klar
-                        foreach (var product in _dbContext.Products)
+                        foreach (var product in dbContext.Products)
                         {
                             Console.WriteLine($"[{product.Id}] {product.Name}");
                         }
@@ -478,7 +476,7 @@ namespace TheWebShop
                         int quantity = Convert.ToInt32(Console.ReadLine());
                         //Console.Write("Utvald produkt: ");
                         //var chosenProduct = Console.ReadLine().ToLower(); //ternery i constructorn
-                        foreach (var s in _dbContext.Suppliers)
+                        foreach (var s in dbContext.Suppliers)
                         {
                             Console.WriteLine($"[{s.Id}] {s.Name}");
                         }
@@ -494,7 +492,7 @@ namespace TheWebShop
                                 input4 = Console.ReadLine();
                             }
 
-                            var supplier = _dbContext.Suppliers.Where(x => x.Id == supplierId).FirstOrDefault();
+                            var supplier = dbContext.Suppliers.Where(x => x.Id == supplierId).FirstOrDefault();
                             if (supplier is not null)
                             {
                                 exitLoop = true;
@@ -505,7 +503,7 @@ namespace TheWebShop
                                 Console.ReadKey(true);
                             }
                         }
-                        foreach (var c in _dbContext.Categories)
+                        foreach (var c in dbContext.Categories)
                         {
                             Console.WriteLine($"[{c.Id}] {c.Name}");
                         }
@@ -522,7 +520,7 @@ namespace TheWebShop
                                 input4 = Console.ReadLine();
                             }
 
-                            var category = _dbContext.Categories.Where(x => x.Id == categoryId).FirstOrDefault();
+                            var category = dbContext.Categories.Where(x => x.Id == categoryId).FirstOrDefault();
                             if (category is not null)
                             {
                                 exitLoop = true;
@@ -536,7 +534,7 @@ namespace TheWebShop
 
 
 
-                        _dbContext.Products.Add(new Product
+                        dbContext.Products.Add(new Product
                         {
                             Name = name,
                             Price = price,
@@ -545,7 +543,7 @@ namespace TheWebShop
                             CategoryId = categoryId,
                             SupplierId = supplierId
                         });
-                        _dbContext.SaveChanges();
+                        dbContext.SaveChanges();
 
 
 
@@ -561,7 +559,7 @@ namespace TheWebShop
                             input2 = Console.ReadLine();
                         }
 
-                        var product2 = _dbContext.Products.Where(x => x.Id == id2).FirstOrDefault();
+                        var product2 = dbContext.Products.Where(x => x.Id == id2).FirstOrDefault();
                         if (product2 is not null)
                         {
                             Console.WriteLine($"Är du säker på att du vill radera {product2.Name} med id {product2.Id}?");
@@ -571,8 +569,8 @@ namespace TheWebShop
 
                             if (answer == 'j' || answer == 'J')
                             {
-                                _dbContext.Products.Remove(product2);
-                                _dbContext.SaveChanges();
+                                dbContext.Products.Remove(product2);
+                                dbContext.SaveChanges();
                             }
                             else
                             {
@@ -597,7 +595,7 @@ namespace TheWebShop
                             input3 = Console.ReadLine();
                         }
 
-                        var product3 = _dbContext.Products.Where(x => x.Id == id3).FirstOrDefault();
+                        var product3 = dbContext.Products.Where(x => x.Id == id3).FirstOrDefault();
                         if (product3 is not null)
                         {
                             Console.WriteLine($"Ange vad du vill ändra på");
@@ -614,28 +612,28 @@ namespace TheWebShop
                                 case 'n':
                                     Console.Write("Ange nytt namn: ");
                                     product3.Name = Console.ReadLine();
-                                    _dbContext.SaveChanges();
+                                    dbContext.SaveChanges();
                                     break;
                                 case 'P':
                                 case 'p':
                                     Console.WriteLine("Nuvarande pris: " + product3.Price);
                                     Console.Write("Ange nytt pris: ");
                                     product3.Price = Convert.ToInt32(Console.ReadLine());
-                                    _dbContext.SaveChanges();
+                                    dbContext.SaveChanges();
                                     break;
                                 case 'B':
                                 case 'b':
                                     Console.WriteLine("Nuvarande beskrivning: " + product3.DetailedInfo);
                                     Console.Write("Ange ny beskrivning: ");
                                     product3.DetailedInfo = Console.ReadLine();
-                                    _dbContext.SaveChanges();
+                                    dbContext.SaveChanges();
                                     break;
                                 case 'A':
                                 case 'a':
                                     Console.WriteLine("Nuvarande antal: " + product3.Quantity);
                                     Console.Write("Ange nytt antal: ");
                                     product3.Quantity = Convert.ToInt32(Console.ReadLine());
-                                    _dbContext.SaveChanges();
+                                    dbContext.SaveChanges();
                                     break;
                                 case 'U':
                                 case 'u':
@@ -647,7 +645,7 @@ namespace TheWebShop
                                     if (chosenProduct1 == "ja")
                                     {
                                         product3.ChosenProduct = !product3.ChosenProduct;
-                                        _dbContext.SaveChanges();
+                                        dbContext.SaveChanges();
                                     }
                                     break;
                                 default:
@@ -673,13 +671,14 @@ namespace TheWebShop
 
         private static void Cities()
         {
+            using var dbContext = new TheWebShopContext();
             var cityLoop = true;
             while (cityLoop)
             {
                 Console.Clear();
 
                 Console.WriteLine($"Id Namn");
-                foreach (var city in _dbContext.Cities)
+                foreach (var city in dbContext.Cities)
                 {
                     Console.WriteLine($"{city.Id} {city.Name}");
                 }
@@ -696,7 +695,7 @@ namespace TheWebShop
                     case '1':
                         Console.Clear();
                         // Klar
-                        foreach (var country1 in _dbContext.Countries)
+                        foreach (var country1 in dbContext.Countries)
                         {
                             Console.WriteLine($"[{country1.Id}] {country1.Name}");
                         }
@@ -717,13 +716,13 @@ namespace TheWebShop
                             break;
                         }
 
-                        var country = _dbContext.Countries.Where(x => x.Id == id).FirstOrDefault();
+                        var country = dbContext.Countries.Where(x => x.Id == id).FirstOrDefault();
                         if (country is not null)
                         {
                             Console.WriteLine("Ange ny stad");
                             var name = Console.ReadLine();
-                            _dbContext.Cities.Add(new City { Name = name, CountryId = id });
-                            _dbContext.SaveChanges();
+                            dbContext.Cities.Add(new City { Name = name, CountryId = id });
+                            dbContext.SaveChanges();
                         }
                         else
                         {
@@ -744,7 +743,7 @@ namespace TheWebShop
                             input2 = Console.ReadLine();
                         }
 
-                        var city = _dbContext.Cities.Where(x => x.Id == id2).FirstOrDefault();
+                        var city = dbContext.Cities.Where(x => x.Id == id2).FirstOrDefault();
                         if (city is not null)
                         {
                             Console.WriteLine($"Är du säker på att du vill radera {city.Name} med id {city.Id}?");
@@ -755,8 +754,8 @@ namespace TheWebShop
                             {
                                 case 'J':
                                 case 'j':
-                                    _dbContext.Cities.Remove(city);
-                                    _dbContext.SaveChanges();
+                                    dbContext.Cities.Remove(city);
+                                    dbContext.SaveChanges();
                                     break;
                                 default:
                                     Console.WriteLine("Du valde att inte ta bort staden. Tryck valfri tangent");
@@ -781,12 +780,12 @@ namespace TheWebShop
                             input3 = Console.ReadLine();
                         }
 
-                        var city2 = _dbContext.Cities.Where(x => x.Id == id3).FirstOrDefault();
+                        var city2 = dbContext.Cities.Where(x => x.Id == id3).FirstOrDefault();
                         if (city2 is not null)
                         {
                             Console.WriteLine($"Ange nytt namn på \"{city2.Name}\"");
                             city2.Name = Console.ReadLine();
-                            _dbContext.SaveChanges();
+                            dbContext.SaveChanges();
                         }
                         else
                         {
@@ -805,13 +804,14 @@ namespace TheWebShop
 
         private static void Countries()
         {
+            using var dbContext = new TheWebShopContext();
             var countryLoop = true;
             while (countryLoop)
             {
                 Console.Clear();
 
                 Console.WriteLine($"Id Namn");
-                foreach (var country in _dbContext.Countries)
+                foreach (var country in dbContext.Countries)
                 {
                     Console.WriteLine($"{country.Id} {country.Name}");
                 }
@@ -829,8 +829,8 @@ namespace TheWebShop
                         // Klar
                         Console.WriteLine("Ange nytt land");
                         var name = Console.ReadLine();
-                        _dbContext.Countries.Add(new Country { Name = name });
-                        _dbContext.SaveChanges();
+                        dbContext.Countries.Add(new Country { Name = name });
+                        dbContext.SaveChanges();
                         break;
                     case '2':
                         // Klar
@@ -845,7 +845,7 @@ namespace TheWebShop
                             input = Console.ReadLine();
                         }
 
-                        var country = _dbContext.Countries.Where(x => x.Id == id).FirstOrDefault();
+                        var country = dbContext.Countries.Where(x => x.Id == id).FirstOrDefault();
                         if (country is not null)
                         {
                             Console.WriteLine($"Är du säker på att du vill radera {country.Name} med id {country.Id}?");
@@ -856,8 +856,8 @@ namespace TheWebShop
                             {
                                 case 'J':
                                 case 'j':
-                                    _dbContext.Countries.Remove(country);
-                                    _dbContext.SaveChanges();
+                                    dbContext.Countries.Remove(country);
+                                    dbContext.SaveChanges();
                                     break;
                                 default:
                                     Console.WriteLine("Du valde att inte ta bort landet. Tryck valfri tangent");
@@ -882,12 +882,12 @@ namespace TheWebShop
                             input2 = Console.ReadLine();
                         }
 
-                        var country2 = _dbContext.Countries.Where(x => x.Id == id2).FirstOrDefault();
+                        var country2 = dbContext.Countries.Where(x => x.Id == id2).FirstOrDefault();
                         if (country2 is not null)
                         {
                             Console.WriteLine($"Ange nytt namn på \"{country2.Name}\"");
                             country2.Name = Console.ReadLine();
-                            _dbContext.SaveChanges();
+                            dbContext.SaveChanges();
                         }
                         else
                         {
@@ -906,13 +906,14 @@ namespace TheWebShop
 
         private static void Supplier()
         {
+            using var dbContext = new TheWebShopContext();
             var supplierLoop = true;
             while (supplierLoop)
             {
                 Console.Clear();
 
                 Console.WriteLine($"Id Namn");
-                foreach (var supplier in _dbContext.Suppliers)
+                foreach (var supplier in dbContext.Suppliers)
                 {
                     Console.WriteLine($"{supplier.Id} {supplier.Name}");
                 }
@@ -930,8 +931,8 @@ namespace TheWebShop
                         // Klar
                         Console.WriteLine("Ange namn på ny leverantör");
                         var name = Console.ReadLine();
-                        _dbContext.Suppliers.Add(new Supplier { Name = name });
-                        _dbContext.SaveChanges();
+                        dbContext.Suppliers.Add(new Supplier { Name = name });
+                        dbContext.SaveChanges();
                         break;
                     case '2':
                         // Klar
@@ -946,7 +947,7 @@ namespace TheWebShop
                             input = Console.ReadLine();
                         }
 
-                        var supplier = _dbContext.Suppliers.Where(x => x.Id == id).FirstOrDefault();
+                        var supplier = dbContext.Suppliers.Where(x => x.Id == id).FirstOrDefault();
                         if (supplier is not null)
                         {
                             Console.WriteLine($"Är du säker på att du vill radera {supplier.Name} med id {supplier.Id}?");
@@ -957,8 +958,8 @@ namespace TheWebShop
                             {
                                 case 'J':
                                 case 'j':
-                                    _dbContext.Suppliers.Remove(supplier);
-                                    _dbContext.SaveChanges();
+                                    dbContext.Suppliers.Remove(supplier);
+                                    dbContext.SaveChanges();
                                     break;
                                 default:
                                     Console.WriteLine("Du valde att inte ta bort leverantören. Tryck valfri tangent");
@@ -983,12 +984,12 @@ namespace TheWebShop
                             input2 = Console.ReadLine();
                         }
 
-                        var supplier2 = _dbContext.Suppliers.Where(x => x.Id == id2).FirstOrDefault();
+                        var supplier2 = dbContext.Suppliers.Where(x => x.Id == id2).FirstOrDefault();
                         if (supplier2 is not null)
                         {
                             Console.WriteLine($"Ange nytt namn på \"{supplier2.Name}\"");
                             supplier2.Name = Console.ReadLine();
-                            _dbContext.SaveChanges();
+                            dbContext.SaveChanges();
                         }
                         else
                         {
@@ -1007,13 +1008,14 @@ namespace TheWebShop
 
         private static void Category()
         {
+            using var dbContext = new TheWebShopContext();
             var categoryLoop = true;
             while (categoryLoop)
             {
                 Console.Clear();
 
                 Console.WriteLine($"Id Namn");
-                foreach (var category in _dbContext.Categories)
+                foreach (var category in dbContext.Categories)
                 {
                     Console.WriteLine($"{category.Id} {category.Name}\t{category.Description}");
                 }
@@ -1033,8 +1035,8 @@ namespace TheWebShop
                         var name = Console.ReadLine();
                         Console.WriteLine("Ange beskrivning på " + name);
                         var description = Console.ReadLine();
-                        _dbContext.Categories.Add(new Category { Name = name, Description = description });
-                        _dbContext.SaveChanges();
+                        dbContext.Categories.Add(new Category { Name = name, Description = description });
+                        dbContext.SaveChanges();
                         break;
                     case '2':
                         // Klar
@@ -1049,7 +1051,7 @@ namespace TheWebShop
                             input = Console.ReadLine();
                         }
 
-                        var category = _dbContext.Categories.Where(x => x.Id == id).FirstOrDefault();
+                        var category = dbContext.Categories.Where(x => x.Id == id).FirstOrDefault();
                         if (category is not null)
                         {
                             Console.WriteLine($"Är du säker på att du vill radera {category.Name} med id {category.Id}?");
@@ -1060,8 +1062,8 @@ namespace TheWebShop
                             {
                                 case 'J':
                                 case 'j':
-                                    _dbContext.Categories.Remove(category);
-                                    _dbContext.SaveChanges();
+                                    dbContext.Categories.Remove(category);
+                                    dbContext.SaveChanges();
                                     break;
                                 default:
                                     Console.WriteLine("Du valde att inte ta bort kategorin. Tryck valfri tangent");
@@ -1086,7 +1088,7 @@ namespace TheWebShop
                             input2 = Console.ReadLine();
                         }
 
-                        var category2 = _dbContext.Categories.Where(x => x.Id == id2).FirstOrDefault();
+                        var category2 = dbContext.Categories.Where(x => x.Id == id2).FirstOrDefault();
                         if (category2 is not null)
                         {
                             Console.WriteLine($"Vill du ändra på namn \"{category2.Name}\" eller beskrivning?");
@@ -1099,14 +1101,14 @@ namespace TheWebShop
                                 case 'n':
                                     Console.WriteLine("Ange nytt namn");
                                     category2.Name = Console.ReadLine();
-                                    _dbContext.SaveChanges();
+                                    dbContext.SaveChanges();
                                     break;
                                 case 'B':
                                 case 'b':
                                     Console.WriteLine("Nuvarande beskrivning: " + category2.Description);
                                     Console.WriteLine("Ange ny beskrivning");
                                     category2.Description = Console.ReadLine();
-                                    _dbContext.SaveChanges();
+                                    dbContext.SaveChanges();
                                     break;
                                 default:
                                     Console.WriteLine("Du valde att ändra kategorin. Tryck valfri tangent");
