@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,9 @@ namespace TheWebShop
             {
                 Console.Clear();
 
+                Console.WriteLine("Välkommen till Webbshoppen!\n" +
+                    "Var vänlig välj om du är kund eller admin\n");
+
                 Console.WriteLine("[A]dmin");
                 Console.WriteLine("[K]under");
                 Console.WriteLine("[L]ämna TheWebShop");
@@ -31,12 +35,72 @@ namespace TheWebShop
                         break;
                     case 'K':
                     case 'k':
-                        // Go to customer-page
-
+                        Customer();
                         break;
                     case 'L':
                     case 'l':
                         loop = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private static void Customer()
+        {
+            var customerLoop = true;
+            while (customerLoop)
+            {
+                Console.Clear();
+
+                Console.WriteLine("Välkommen till Webbshoppen!\n");
+
+                Console.WriteLine("Utvalda produkter:");
+                var chosenProducts = _dbContext.Products
+                    .Where(x => x.ChosenProduct)
+                    .ToList();
+
+                if (chosenProducts.Count > 3)
+                {
+                    var randomized = Randomize(chosenProducts)
+                        .Take(3);
+
+                    Console.WriteLine($"Id\tPris Namn");
+                    foreach (var product in randomized)
+                    {
+                        Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Id\tPris Namn");
+                    foreach (var product in chosenProducts)
+                    {
+                        Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
+                    }
+                }
+
+
+                // Här är vi
+                Console.WriteLine("[A]dmin");
+                Console.WriteLine("[K]under");
+                Console.WriteLine("[L]ämna TheWebShop");
+
+                var choice = Console.ReadKey(true).KeyChar;
+                switch (choice)
+                {
+                    case 'A':
+                    case 'a':
+                        Admin();
+                        break;
+                    case 'K':
+                    case 'k':
+                        Customer();
+                        break;
+                    case 'L':
+                    case 'l':
+                        customerLoop = false;
                         break;
                     default:
                         break;
@@ -50,15 +114,52 @@ namespace TheWebShop
             while (adminLoop)
             {
                 Console.Clear();
+                Console.WriteLine("[1] Hantera produkter, kategorier och leverantörer");
+                Console.WriteLine("[2] Hantera kunder");
+                Console.WriteLine("[3] Hantera betalmetoder");
+                Console.WriteLine("[4] Hantera fraktmetoder");
+                Console.WriteLine("[5] Hantera ordrar");
+                Console.WriteLine("[6] Hantera länder och städer");
+                Console.WriteLine("[0] Backa meny");
+
+                var choice = Console.ReadKey(true).KeyChar;
+                switch (choice)
+                {
+                    case '1':
+                        ProductHandling();
+                        break;
+                    case '2':
+                        // Customer
+                        break;
+                    case '3':
+                        PaymentMethods();
+                        break;
+                    case '4':
+                        FreightMethods();
+                        break;
+                    case '5':
+                        break;
+                    case '6':
+                        Locations();
+                        break;
+                    case '0':
+                        adminLoop = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private static void ProductHandling()
+        {
+            var loop = true;
+            while (loop)
+            {
+                Console.Clear();
                 Console.WriteLine("[1] Hantera produkter");
                 Console.WriteLine("[2] Hantera kategorier");
-                Console.WriteLine("[3] Hantera leverantör");
-                Console.WriteLine("[4] Hantera kunder");
-                Console.WriteLine("[5] Hantera betalmetoder");
-                Console.WriteLine("[6] Hantera fraktmetoder");
-                Console.WriteLine("[7] Hantera ordrar");
-                Console.WriteLine("[8] Hantera städer");
-                Console.WriteLine("[9] Hantera länder");
+                Console.WriteLine("[3] Hantera leverantörer");
                 Console.WriteLine("[0] Backa meny");
 
                 var choice = Console.ReadKey(true).KeyChar;
@@ -73,24 +174,36 @@ namespace TheWebShop
                     case '3':
                         Supplier();
                         break;
-                    case '4':
+                    case '0':
+                        loop = false;
                         break;
-                    case '5':
-                        PaymentMethods();
+                    default:
                         break;
-                    case '6':
-                        FreightMethods();
-                        break;
-                    case '7':
-                        break;
-                    case '8':
-                        Cities();
-                        break;
-                    case '9':
+                }
+            }
+        }
+
+        private static void Locations()
+        {
+            var locationLoop = true;
+            while (locationLoop)
+            {
+                Console.Clear();
+                Console.WriteLine("[1] Hantera länder");
+                Console.WriteLine("[2] Hantera städer");
+                Console.WriteLine("[0] Backa meny");
+
+                var choice = Console.ReadKey(true).KeyChar;
+                switch (choice)
+                {
+                    case '1':
                         Countries();
                         break;
+                    case '2':
+                        Cities();
+                        break;
                     case '0':
-                        adminLoop = false;
+                        locationLoop = false;
                         break;
                     default:
                         break;
@@ -327,10 +440,10 @@ namespace TheWebShop
             {
                 Console.Clear();
 
-                Console.WriteLine($"Id Namn");
+                Console.WriteLine($"Id Utvald\tNamn");
                 foreach (var product in _dbContext.Products)
                 {
-                    Console.WriteLine($"{product.Id} {product.Name}");
+                    Console.WriteLine($"{product.Id} {product.ChosenProduct}\t\t{product.Name}");
                 }
 
                 Console.WriteLine();
@@ -363,8 +476,8 @@ namespace TheWebShop
                         var detailedInfo = Console.ReadLine();
                         Console.Write("Antal: ");
                         int quantity = Convert.ToInt32(Console.ReadLine());
-                        Console.Write("Utvald produkt: ");
-                        var chosenProduct = Console.ReadLine().ToLower(); //ternery i constructorn
+                        //Console.Write("Utvald produkt: ");
+                        //var chosenProduct = Console.ReadLine().ToLower(); //ternery i constructorn
                         foreach (var s in _dbContext.Suppliers)
                         {
                             Console.WriteLine($"[{s.Id}] {s.Name}");
@@ -430,8 +543,7 @@ namespace TheWebShop
                             DetailedInfo = detailedInfo,
                             Quantity = quantity,
                             CategoryId = categoryId,
-                            SupplierId = supplierId,
-                            ChosenProduct = chosenProduct == "ja" ? true : false
+                            SupplierId = supplierId
                         });
                         _dbContext.SaveChanges();
 
@@ -527,6 +639,7 @@ namespace TheWebShop
                                     break;
                                 case 'U':
                                 case 'u':
+
                                     Console.Write(product3.Name + " är ");
                                     Console.WriteLine(product3.ChosenProduct == true ? "utvald produkt" : "ej utvald produkt");
                                     Console.Write("Vill du ändra utvald produkt?: ");
@@ -1014,6 +1127,13 @@ namespace TheWebShop
                         break;
                 }
             }
+        }
+
+        private static List<Product> Randomize(List<Product> products)
+        {
+            var random = new Random();
+            var randomized = products.OrderBy(x => random.Next()).ToList();
+            return randomized;
         }
     }
 }
