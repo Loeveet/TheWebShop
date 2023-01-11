@@ -67,18 +67,21 @@ namespace TheWebShop
             {
                 case 'G':
                 case 'g':
-                    CustomerStartPage(); // går vidare som gäst
+                    CustomerStartPage(null); // går vidare som gäst
                     break;
                 case 'B':
                 case 'b':
                     Console.WriteLine("Välj befintligt kundId"); // välj befintlig kund
                     int custId = Convert.ToInt32(Console.ReadLine());
-                    CustomerStartPage();
+                    var customer = dbContext.Customers
+                        .Where(c => c.Id == custId)
+                        .FirstOrDefault();              //Todo En kontroll så att det finns en kund på det Id.
+                    CustomerStartPage(customer);
                     break;
                 case 'N':
                 case 'n':
-                    CreateNewCustomer(); // skapa nu kund
-                    CustomerStartPage();
+                    var newCustomer = CreateNewCustomer(); // skapa nu kund                    
+                    CustomerStartPage(newCustomer);
                     break;
                 default:
                     break;
@@ -86,7 +89,7 @@ namespace TheWebShop
 
         }
 
-        private static void CreateNewCustomer()
+        private static Customer CreateNewCustomer()
         {
             using var dbContext = new TheWebShopContext();
 
@@ -141,9 +144,11 @@ namespace TheWebShop
             };
             dbContext.Add(customer);
             dbContext.SaveChanges();
+
+            return customer;
         }
 
-        private static void CustomerStartPage()
+        private static void CustomerStartPage(Customer customer)
         {
             using var dbContext = new TheWebShopContext();
             var customerLoop = true;
@@ -151,7 +156,8 @@ namespace TheWebShop
             {
                 Console.Clear();
 
-                Console.WriteLine("Välkommen till Webbshoppen!\n");
+                Console.WriteLine($"Välkommen {(customer == null ? "gäst" : customer.FirstName)} till Webbshoppen!\n");
+
 
                 Console.WriteLine("Utvalda produkter:");
                 var chosenProducts = dbContext.Products
@@ -343,9 +349,7 @@ namespace TheWebShop
                     {
                         showProdLoop = false;
                     }
-
                 }
-
             }
         }
 
