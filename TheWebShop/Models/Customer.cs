@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +7,10 @@ using System.Threading.Tasks;
 
 namespace TheWebShop.Models
 {
+    [Index(nameof(Email), IsUnique = true)]
+    [Index(nameof(CreditCard), IsUnique = true)]
+    [Index(nameof(PhoneNumber), IsUnique = true)]
+
     internal class Customer
     {
         public int Id { get; set; }

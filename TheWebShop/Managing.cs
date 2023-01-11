@@ -182,8 +182,8 @@ namespace TheWebShop
                                     Console.WriteLine("Vald produkt finns ej, försök igen");
                                 }
                                 else
-                                {
-                                    //lägg vara i varukorg
+                                {                                   
+                                    ShowProduct(product);
                                 }
                             }
                         }
@@ -201,6 +201,34 @@ namespace TheWebShop
                     }
                 }
             }
+        }
+
+        private static void ShowProduct(Product product)
+        {
+            if (product.Quantity == 0)
+            {
+                Console.WriteLine(product.Name + " finns ej i lager");
+                Console.WriteLine();
+                Console.WriteLine($"Id\tPris \t Namn");
+                Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
+            }
+            else
+            {
+                Console.WriteLine(product.Quantity + " finns i lager");
+                Console.WriteLine();
+                Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
+                Console.WriteLine("Skriv antalet av denna produkt du vill köpa eller 0 för att backa i menyn");
+                var customeranswer = Convert.ToInt32(Console.ReadLine());
+                if (customeranswer != 0)
+                {
+                    for(int i = 0; i < customeranswer; i++)
+                    {
+                        //Todo kontrollera customeranswer < product.Quantity och se till att en kund är med
+                    } 
+                }
+                 
+            }  
+          
         }
 
         public static void ShowContains(string input)

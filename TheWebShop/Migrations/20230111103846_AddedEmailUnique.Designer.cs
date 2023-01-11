@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheWebShop.Models;
 
@@ -11,9 +12,10 @@ using TheWebShop.Models;
 namespace TheWebShop.Migrations
 {
     [DbContext(typeof(TheWebShopContext))]
-    partial class TheWebShopContextModelSnapshot : ModelSnapshot
+    [Migration("20230111103846_AddedEmailUnique")]
+    partial class AddedEmailUnique
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,7 +133,7 @@ namespace TheWebShop.Migrations
 
                     b.Property<string>("CreditCard")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
@@ -150,7 +152,7 @@ namespace TheWebShop.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Street")
                         .IsRequired()
@@ -163,13 +165,7 @@ namespace TheWebShop.Migrations
 
                     b.HasIndex("CityId");
 
-                    b.HasIndex("CreditCard")
-                        .IsUnique();
-
                     b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("PhoneNumber")
                         .IsUnique();
 
                     b.ToTable("Customers");
