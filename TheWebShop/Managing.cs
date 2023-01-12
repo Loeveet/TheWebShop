@@ -129,18 +129,20 @@ namespace TheWebShop
             int birthDay = Convert.ToInt32(Console.ReadLine());
             Console.Write("Ange kreditkortsnummer, tolv siffror: ");
             var creditCardNr = Console.ReadLine();
-            
+
             Customer customer = new Customer
             {
                 FirstName = firstName,
                 LastName = lastName,
-                CityId= cityId,
+                CityId = cityId,
                 Street = adress,
                 ZipCode = zipCode,
                 Email = email,
                 PhoneNumber = phoneNumber,
                 DateOfBirth = new DateTime(birthYear, birthMonth, birthDay),
-                CreditCard = creditCardNr
+                CreditCard = creditCardNr,
+                Carts = new List<Cart>(),
+                Orders = new List<Order>()
             };
             dbContext.Add(customer);
             dbContext.SaveChanges();
@@ -194,7 +196,7 @@ namespace TheWebShop
                 {
                     case 'S':
                     case 's':
-                        ShoppingPage();
+                        ShoppingPage(customer);
                         break;
                     case 'V':
                     case 'v':
@@ -216,7 +218,7 @@ namespace TheWebShop
             throw new NotImplementedException();
         }
 
-        private static void ShoppingPage()
+        private static void ShoppingPage(Customer customer)
         {
             using var dbContext = new TheWebShopContext();
             var shoppingLoop = true;
@@ -246,8 +248,9 @@ namespace TheWebShop
                     else
                     {
                         var products = dbContext.Products
-                            .Where(x => x.CategoryId == categoryId);
-                        if (products.Count() > 0)
+                            .Where(x => x.Category.Id == categoryId);
+                            //.Where(x => x.CategoryId == categoryId);
+                        if (products.Any())
                         {
                             var category = dbContext.Categories
                                 .Where(x => x.Id == categoryId)
@@ -259,10 +262,10 @@ namespace TheWebShop
                                 Console.WriteLine(category.Name);
                                 foreach (var p in products)
                                 {
-                                    Console.WriteLine($"Id [{p.Id}] - {p.Name} - {p.Price} kr - {p.DetailedInfo}");
+                                    Console.WriteLine($"Id [{p.Id}] - {p.Name} - {p.Price} kr");
                                 }
                                 Console.WriteLine();
-                                Console.WriteLine("Välj Id för att lägga till i varukorg, eller ange [0] för att backa");
+                                Console.WriteLine("Välj Id för att läsa mer om produkten, eller ange [0] för att backa");
                                 var buyLoop = true;
                                 while (buyLoop)
                                 {
@@ -274,7 +277,8 @@ namespace TheWebShop
                                         input = Console.ReadLine();
                                     }
                                     var product = dbContext.Products
-                                        .Where(x => x.Id == productId && x.CategoryId == categoryId)
+                                        .Where(x => x.Id == productId && x.Category.Id == categoryId)
+                                        //.Where(x => x.Id == productId && x.CategoryId == categoryId)
                                         .FirstOrDefault();
                                     if (productId == 0)
                                     {
@@ -287,7 +291,7 @@ namespace TheWebShop
                                     }
                                     else
                                     {
-                                        ShowProduct(product);
+                                        ShowProduct(product, customer);
                                         buyLoop = false;
                                     }
                                 }
@@ -309,8 +313,9 @@ namespace TheWebShop
             }
         }
 
-        private static void ShowProduct(Product product)
+        private static void ShowProduct(Product product, Customer customer)
         {
+            using var dbContext = new TheWebShopContext();
             var showProdLoop = true;
             if (product.Quantity == 0)
             {
@@ -332,10 +337,23 @@ namespace TheWebShop
                     var customeranswer = Convert.ToInt32(Console.ReadLine());
                     if (customeranswer != 0 && customeranswer <= product.Quantity)
                     {
+                        Cart cart = new()
+                        {
+                            CustomerId = customer.Id,
+                            Customer = customer,
+                            Products = new List<Product>()
+                        };
+                        // TODO: Här är vi!
+                        //dbContext.Carts.Add(cart);
                         for (int i = 0; i < customeranswer; i++)
                         {
-                            //Todo se till att en kund är med
+                            cart.Products.Add(product);
                         }
+                        //customer.Carts = new List<Cart>();
+                        //customer.Carts.Add(cart);
+                        dbContext.Carts.Add(cart);
+                        dbContext.SaveChanges();
+
                         showProdLoop = false;
                         Console.WriteLine(customeranswer + " produkter tillagda i varukorg");
                         Console.ReadKey();
@@ -816,7 +834,7 @@ namespace TheWebShop
                             Price = price,
                             DetailedInfo = detailedInfo,
                             Quantity = quantity,
-                            CategoryId = categoryId,
+                            //CategoryId = categoryId,
                             SupplierId = supplierId
                         });
                         dbContext.SaveChanges();
