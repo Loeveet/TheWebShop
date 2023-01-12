@@ -25,8 +25,9 @@ namespace TheWebShop.Models
         public string CreditCard { get; set; }
 
         public virtual City City { get; set; }
-        public virtual ICollection<Order> Orders { get; set; }
-        public virtual ICollection<Cart> Carts { get; set; }
+        public virtual Cart Cart { get; set; }
+        public virtual ICollection<Order>? Orders { get; set; }
+        //public virtual ICollection<Cart> Carts { get; set; }
 
         internal static void MenuCustomer()
         {
@@ -54,6 +55,7 @@ namespace TheWebShop.Models
                     Console.WriteLine("Välj befintligt kundId"); // välj befintlig kund
                     int custId = Convert.ToInt32(Console.ReadLine());
                     var customer = dbContext.Customers
+                        .Include(x => x.Cart.Products)
                         .Where(c => c.Id == custId)
                         .FirstOrDefault();              //Todo En kontroll så att det finns en kund på det Id.
                     CustomerStartPage(customer);
@@ -120,10 +122,12 @@ namespace TheWebShop.Models
                 PhoneNumber = phoneNumber,
                 DateOfBirth = new DateTime(birthYear, birthMonth, birthDay),
                 CreditCard = creditCardNr,
-                Carts = new List<Cart>(),
+                Cart = new Cart{ Products = new List<Product>()},
                 Orders = new List<Order>()
             };
             dbContext.Add(customer);
+            dbContext.SaveChanges();
+            customer.Cart.CustomerId = customer.Id;
             dbContext.SaveChanges();
 
             return customer;

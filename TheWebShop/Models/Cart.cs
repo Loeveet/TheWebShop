@@ -11,7 +11,7 @@ namespace TheWebShop.Models
         public int Id { get; set; }
         public int CustomerId { get; set; }
         public virtual Customer Customer { get; set; }
-        public virtual ICollection<Product> Products { get; set; }
+        public virtual List<Product>? Products { get; set; }
         internal static void HandlingShoppingCart()
         {
             // Metod för att hantera varukorg

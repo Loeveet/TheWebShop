@@ -13,16 +13,19 @@ namespace TheWebShop
             //Göra metoder för allt
             //Vi har lagt till cart, men ännu inte testat den. 
             //Se över metod/variabelnamn
-            //Kolla hur det ligger till med metodnamn som är samma som klassnamn
 
 
+            //using var dbContext = new TheWebShopContext();
 
-            // Test för att se product plus kategori
-            //using var db = new TheWebShopContext();
-            //foreach (var p in db.Products.Include(c => c.Category))
+            //foreach (var x in dbContext.Carts.Include(x => x.Products).Include(x => x.Customer))
             //{
-            //    Console.WriteLine(p.Name + " - " + p.Category.Name);
+            //    Console.WriteLine(x.Customer.FirstName);
+            //    foreach (var y in x.Products)
+            //    {
+            //        Console.WriteLine("\t" + y.Name);
+            //    }
             //}
+            //Console.WriteLine();
 
             Managing.RunTheWebShop();
         }

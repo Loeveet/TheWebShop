@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -284,26 +285,27 @@ namespace TheWebShop.Models
                     Console.WriteLine("Skriv antalet av denna produkt du vill köpa eller 0 för att backa i menyn");
                     var customeranswer = Convert.ToInt32(Console.ReadLine());
                     if (customeranswer != 0 && customeranswer <= product.Quantity)
-                    {
-                        Cart cart = new()
-                        {
-                            CustomerId = customer.Id,
-                            Customer = customer,
-                            Products = new List<Product>()
-                        };
+                    {                                 
+                        
                         // TODO: Här är vi!
-                        //dbContext.Carts.Add(cart);
                         for (int i = 0; i < customeranswer; i++)
                         {
-                            cart.Products.Add(product);
+                            customer.Cart.Products
+                                .Add(product);
                         }
-                        //customer.Carts = new List<Cart>();
-                        //customer.Carts.Add(cart);
-                        dbContext.Carts.Add(cart);
+                        dbContext.Entry(customer).State= EntityState.Modified;
                         dbContext.SaveChanges();
 
                         showProdLoop = false;
                         Console.WriteLine(customeranswer + " produkter tillagda i varukorg");
+                        foreach (var x in dbContext.Carts.Include(x => x.Products).Include(x => x.Customer))
+                        {
+                            Console.WriteLine(x.Customer.FirstName);
+                            foreach (var y in x.Products)
+                            {
+                                Console.WriteLine("\t" + y.Name);
+                            }
+                        }
                         Console.ReadKey();
                     }
                     else if (customeranswer != 0 && customeranswer > product.Quantity)
