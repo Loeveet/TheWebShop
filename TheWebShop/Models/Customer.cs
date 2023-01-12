@@ -27,5 +27,174 @@ namespace TheWebShop.Models
         public virtual City City { get; set; }
         public virtual ICollection<Order> Orders { get; set; }
         public virtual ICollection<Cart> Carts { get; set; }
+
+        internal static void MenuCustomer()
+        {
+            using var dbContext = new TheWebShopContext();
+            Console.Clear();
+            Console.WriteLine("Sparade användare\n");
+            foreach (var c in dbContext.Customers)
+            {
+                Console.WriteLine($"[{c.Id}] - {c.FirstName} {c.LastName} - {c.Email}");
+            }
+            Console.WriteLine("\n[G]äst");
+            Console.WriteLine("[B]efintlig kund");
+            Console.WriteLine("[N]y kund");
+            Console.WriteLine();
+            Console.WriteLine("Välj om du vill handla som gäst, använda befintlig kund eller skapa ny kund");
+            var choice = Console.ReadKey(true).KeyChar;
+            switch (choice)
+            {
+                case 'G':
+                case 'g':
+                    CustomerStartPage(null); // går vidare som gäst
+                    break;
+                case 'B':
+                case 'b':
+                    Console.WriteLine("Välj befintligt kundId"); // välj befintlig kund
+                    int custId = Convert.ToInt32(Console.ReadLine());
+                    var customer = dbContext.Customers
+                        .Where(c => c.Id == custId)
+                        .FirstOrDefault();              //Todo En kontroll så att det finns en kund på det Id.
+                    CustomerStartPage(customer);
+                    break;
+                case 'N':
+                case 'n':
+                    var newCustomer = CreateNewCustomer(); // skapa nu kund                    
+                    CustomerStartPage(newCustomer);
+                    break;
+                default:
+                    break;
+            }
+
+        }
+        private static Customer CreateNewCustomer()
+        {
+            using var dbContext = new TheWebShopContext();
+
+            Console.Write("Ange förnamn: ");
+            var firstName = Console.ReadLine();
+            Console.Write("Ange efternamn: ");
+            var lastName = Console.ReadLine();
+            Console.WriteLine("Registrerade länder");
+            foreach (var c in dbContext.Countries)
+            {
+                Console.WriteLine($"[{c.Id}] - {c.Name}");
+            }
+            Console.Write("Ange landsId: ");
+            int countryId = Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Registrerade städer i valt land");
+            foreach (var city in dbContext.Cities
+                .Where(x => x.CountryId == countryId))
+            {
+                Console.WriteLine($"[{city.Id}] - {city.Name}");
+
+            }
+            Console.Write("Ange stadsId: ");
+            int cityId = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Ange gatuadress: ");
+            var adress = Console.ReadLine();
+            Console.Write("Ange postnummer: ");
+            int zipCode = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Ange email: ");
+            var email = Console.ReadLine();
+            Console.Write("Ange telefonnummer: ");
+            var phoneNumber = Console.ReadLine();
+            Console.Write("Ange födelseår, fyra siffror: ");
+            int birthYear = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Ange födelsemånad: ");
+            int birthMonth = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Ange födelsedatum: ");
+            int birthDay = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Ange kreditkortsnummer, tolv siffror: ");
+            var creditCardNr = Console.ReadLine();
+
+            Customer customer = new Customer
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                CityId = cityId,
+                Street = adress,
+                ZipCode = zipCode,
+                Email = email,
+                PhoneNumber = phoneNumber,
+                DateOfBirth = new DateTime(birthYear, birthMonth, birthDay),
+                CreditCard = creditCardNr,
+                Carts = new List<Cart>(),
+                Orders = new List<Order>()
+            };
+            dbContext.Add(customer);
+            dbContext.SaveChanges();
+
+            return customer;
+        }
+        private static void CustomerStartPage(Customer customer)
+        {
+            using var dbContext = new TheWebShopContext();
+            var customerLoop = true;
+            while (customerLoop)
+            {
+                Console.Clear();
+
+                Console.WriteLine($"Välkommen {(customer == null ? "gäst" : customer.FirstName)} till Webbshoppen!\n");
+
+
+                Console.WriteLine("Utvalda produkter:");
+                var chosenProducts = dbContext.Products
+                    .Where(x => x.ChosenProduct)
+                    .ToList();
+
+                if (chosenProducts.Count > 3)
+                {
+                    var randomized = Randomize(chosenProducts)
+                        .Take(3);
+
+                    Console.WriteLine($"Id\tPris \t Namn");
+                    foreach (var product in randomized)
+                    {
+                        Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Id\tPris \t Namn");
+                    foreach (var product in chosenProducts)
+                    {
+                        Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
+                    }
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("[S]hopsida");
+                Console.WriteLine("[V]arukorg");
+                Console.WriteLine("[B]acka");
+
+                var choice = Console.ReadKey(true).KeyChar;
+                switch (choice)
+                {
+                    case 'S':
+                    case 's':
+                        Managing.ShoppingPage(customer);
+                        break;
+                    case 'V':
+                    case 'v':
+                        //ShoppingCart();
+                        break;
+                    case 'B':
+                    case 'b':
+                        customerLoop = false;
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+        }
+        private static List<Product> Randomize(List<Product> products)
+        {
+            var random = new Random();
+            var randomized = products.OrderBy(x => random.Next()).ToList();
+            return randomized;
+        }
     }
 }
