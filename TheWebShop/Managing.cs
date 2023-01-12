@@ -120,7 +120,7 @@ namespace TheWebShop
                                     }
                                     else
                                     {
-                                        Product.ShowProduct(product, customer);
+                                        Product.ShowProduct(product, customer, dbContext);
                                         buyLoop = false;
                                     }
                                 }

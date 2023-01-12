@@ -262,9 +262,8 @@ namespace TheWebShop.Models
                 }
             }
         }
-        internal static void ShowProduct(Product product, Customer customer)
+        internal static void ShowProduct(Product product, Customer customer, TheWebShopContext dbContext)
         {
-            using var dbContext = new TheWebShopContext();
             var showProdLoop = true;
             if (product.Quantity == 0)
             {
@@ -285,15 +284,25 @@ namespace TheWebShop.Models
                     Console.WriteLine("Skriv antalet av denna produkt du vill köpa eller 0 för att backa i menyn");
                     var customeranswer = Convert.ToInt32(Console.ReadLine());
                     if (customeranswer != 0 && customeranswer <= product.Quantity)
-                    {                                 
-                        
-                        // TODO: Här är vi!
+                    {
+                        // TODO: Här slutade vi
+
+                        //if (customer.Cart is null)
+                        //{
+                        //    customer.Cart = new()
+                        //    {
+                        //        Products = new List<Product>()
+                        //    };
+                        //}
+                        var customersCart = dbContext.Carts
+                            .Include(x => x.Products)
+                            .Where(x => x.CustomerId == customer.Id)
+                            .FirstOrDefault();
+
                         for (int i = 0; i < customeranswer; i++)
                         {
-                            customer.Cart.Products
-                                .Add(product);
+                            customersCart.Products.Add(product);
                         }
-                        dbContext.Entry(customer).State= EntityState.Modified;
                         dbContext.SaveChanges();
 
                         showProdLoop = false;
