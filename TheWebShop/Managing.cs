@@ -223,5 +223,27 @@ namespace TheWebShop
                 }
             }
         }
+
+        internal static void Create(PaymentMethod paymentMethod, TheWebShopContext dbContext)
+        {
+            Console.WriteLine("Ange namn på ny betalmetod");
+            var name = Console.ReadLine();
+            dbContext.Add(new PaymentMethod { Name = name });
+            dbContext.SaveChanges();
+        }
+        internal static void Create(Country country, TheWebShopContext dbContext)
+        {
+            Console.WriteLine("Ange namn på nytt land");
+            var name = Console.ReadLine();
+            dbContext.Add(new Country { Name = name });
+            dbContext.SaveChanges();
+        }
+        internal static void Create(Category category, TheWebShopContext dbContext)
+        {
+            Console.WriteLine("Ange namn på ny kategori");
+            var name = Console.ReadLine();
+            dbContext.Add(new Category { Name = name });
+            dbContext.SaveChanges();
+        }
     }
 }

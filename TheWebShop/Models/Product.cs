@@ -50,12 +50,10 @@ namespace TheWebShop.Models
                 {
                     case '1':
                         Console.Clear();
-                        // Klar
                         foreach (var product in dbContext.Products)
                         {
                             Console.WriteLine($"[{product.Id}] {product.Name}");
                         }
-                        //Console.WriteLine($"\n[0] för att backa\n");
                         Console.WriteLine("\nAnge information på ny produkt eller ange [0] för att backa");
                         Console.Write("Produktnamn: ");
                         var name = Console.ReadLine();
@@ -69,8 +67,6 @@ namespace TheWebShop.Models
                         var detailedInfo = Console.ReadLine();
                         Console.Write("Antal: ");
                         int quantity = Convert.ToInt32(Console.ReadLine());
-                        //Console.Write("Utvald produkt: ");
-                        //var chosenProduct = Console.ReadLine().ToLower(); //ternery i constructorn
                         foreach (var s in dbContext.Suppliers)
                         {
                             Console.WriteLine($"[{s.Id}] {s.Name}");
@@ -92,9 +88,10 @@ namespace TheWebShop.Models
                             {
                                 exitLoop = true;
                             }
-                            else // TODO Lägga in metod för att lägga till supplier
+                            else // TODO Lägga in metod för att lägga till supplier INTE H ELT KLART!!!
                             {
                                 Console.WriteLine("Leverantören fanns ej. Tryck valfri tangent");
+                                Supplier.Create(new Supplier(), dbContext);
                                 Console.ReadKey(true);
                             }
                         }
@@ -340,7 +337,6 @@ namespace TheWebShop.Models
                     }
                     Console.WriteLine();
 
-                    // Alternativ att gå in i produkt
                     Console.WriteLine("Ange Id för att läsa mer om produkten eller [0] för att backa");
                     var inputId = Console.ReadLine();
                     if (int.TryParse(inputId, out int id))
@@ -356,7 +352,6 @@ namespace TheWebShop.Models
                                 .Where(x => x.Id == id)
                                 .FirstOrDefault();
                             ShowProduct(product, customer, dbContext);
-                            //break;
                         }
                         else
                         {

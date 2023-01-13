@@ -14,6 +14,13 @@ namespace TheWebShop.Models
 
         public virtual ICollection<Product> Products { get; set; }
 
+        internal static void Create(Supplier supplier, TheWebShopContext dbContext)
+        {
+            Console.WriteLine("Ange namn på ny leverantör");
+            supplier.Name = Console.ReadLine();
+            dbContext.Add(supplier);
+            dbContext.SaveChanges();
+        }
         internal static void HandlingSupplier()
         {
             using var dbContext = new TheWebShopContext();
@@ -38,11 +45,7 @@ namespace TheWebShop.Models
                 switch (choice)
                 {
                     case '1':
-                        // Klar
-                        Console.WriteLine("Ange namn på ny leverantör");
-                        var name = Console.ReadLine();
-                        dbContext.Suppliers.Add(new Supplier { Name = name });
-                        dbContext.SaveChanges();
+                        Create(new Supplier(), dbContext);
                         break;
                     case '2':
                         // Klar

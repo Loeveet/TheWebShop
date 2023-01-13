@@ -135,6 +135,7 @@ namespace TheWebShop.Models
         {
             using var dbContext = new TheWebShopContext();
             var customerLoop = true;
+            //var randomized = new List<Product>();
             while (customerLoop)
             {
                 Console.Clear();
@@ -149,13 +150,15 @@ namespace TheWebShop.Models
 
                 if (chosenProducts.Count > 3)
                 {
-                    var randomized = Randomize(chosenProducts)
-                        .Take(3);
+                    var products = new List<Product>(chosenProducts);
+                    chosenProducts = new List<Product>();
+                    chosenProducts.AddRange(Randomize(products)
+                        .Take(3));
 
                     Console.WriteLine($"Id\tPris \t Namn");
-                    foreach (var product in randomized)
+                    foreach (var product in chosenProducts)
                     {
-                        Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
+                        Console.WriteLine($"[{product.Id}]\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
                     }
                 }
                 else
@@ -163,11 +166,12 @@ namespace TheWebShop.Models
                     Console.WriteLine($"Id\tPris \t Namn");
                     foreach (var product in chosenProducts)
                     {
-                        Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
+                        Console.WriteLine($"[{product.Id}]\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
                     }
                 }
 
                 Console.WriteLine();
+                Console.WriteLine("[K]öp utvald produkt");
                 Console.WriteLine("[F]ritextsök på produkter");
                 Console.WriteLine("[S]hopsida");
                 Console.WriteLine("[V]arukorg");
@@ -176,6 +180,30 @@ namespace TheWebShop.Models
                 var choice = Console.ReadKey(true).KeyChar;
                 switch (choice)
                 {
+                    case 'K':
+                    case 'k':
+                        Console.WriteLine("Välj Id på den produkten du är intresserad av");
+                        var input = Console.ReadLine();
+                        if (int.TryParse(input, out int id))
+                        {
+                            var product = chosenProducts
+                                .Where(x => x.Id == id)
+                                .FirstOrDefault();
+                            if (product != null)
+                            {
+                                Product.ShowProduct(product, customer, dbContext);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Vald produkt ingår ej bland de utvalda. Tryck valfri tangent för att fortsätta");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Felaktig inmating. Tryck valfri tangent för att fortsätta");
+                        }
+                        Console.ReadKey(true);
+                        break;
                     case 'F':
                     case 'f':
                         Product.ShowSearchResults(customer);
