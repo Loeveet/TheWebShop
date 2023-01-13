@@ -20,9 +20,9 @@ namespace TheWebShop.Models
         }
         internal static void PrintCart(Customer customer)
         {
-            var n = Console.GetCursorPosition();
+            var (StartLeft, StartTop) = Console.GetCursorPosition();
+            int left = 80;
             int top = 2;
-            int left = 110;
             double totalCost = 0;
             using var dbContext = new TheWebShopContext();
             var result = dbContext.Carts
@@ -33,18 +33,22 @@ namespace TheWebShop.Models
             var myCart = result
                 .GroupBy(x => x.Product);
 
-            Console.SetCursorPosition(left, top);
+            Console.SetCursorPosition(left, top-1);
             Console.WriteLine(customer.FirstName);
+            Console.SetCursorPosition(left, top);
+            Console.WriteLine("-----------------------------------------------------");
             foreach (var c in myCart)
             {
-                totalCost += (c.Key.Price * c.Count());
+                totalCost += c.Key.Price * c.Count();
                 top++;
                 Console.SetCursorPosition(left, top);
-                Console.WriteLine($"{c.Key.Name} à {c.Key.Price} kr - {c.Count()} st - Totalt per produkt {totalCost} kr");
+                Console.WriteLine($"{c.Key.Name} à {c.Key.Price} kr - {c.Count()} st - Totalt per produkt {c.Key.Price * c.Count()} kr");
             }         
             Console.SetCursorPosition(left, top+1);
-            Console.WriteLine($"Totalt totalt {totalCost} kr");
-            Console.SetCursorPosition(n.Left, n.Top);
+            Console.WriteLine("-----------------------------------------------------");
+            Console.SetCursorPosition(left, top+2);
+            Console.WriteLine($"Totalt {totalCost} kr");
+            Console.SetCursorPosition(StartLeft, StartTop);
         }
     }
 }

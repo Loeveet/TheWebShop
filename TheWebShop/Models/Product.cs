@@ -283,20 +283,21 @@ namespace TheWebShop.Models
                     Console.WriteLine();
                     Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
                     Console.WriteLine("Skriv antalet av denna produkt du vill köpa eller 0 för att backa i menyn");
-                    var customeranswer = Convert.ToInt32(Console.ReadLine());
-                    if (customeranswer != 0 && customeranswer <= product.Quantity)
+                    var customerAnswer = Convert.ToInt32(Console.ReadLine());
+                    if (customerAnswer != 0 && customerAnswer <= product.Quantity)
                     {
                         customer.Carts = new List<Cart>();
 
-                        for (int i = 0; i < customeranswer; i++)
+                        for (int i = 0; i < customerAnswer; i++)
                         {
                             dbContext.Add(new Cart { CustomerId = customer.Id, ProductId = product.Id });
                             product.Quantity--;
                         }
                         dbContext.SaveChanges();
+                        Console.WriteLine($"{customerAnswer} st {product.Name} är tillagt i varukorgen");
                         showProdLoop = false;
                     }
-                    else if (customeranswer != 0 && customeranswer > product.Quantity)
+                    else if (customerAnswer != 0 && customerAnswer > product.Quantity)
                     {
                         Console.WriteLine("Du har valt fler produkter än vad som finns i lager.");
                         Console.ReadKey(true);
@@ -310,30 +311,69 @@ namespace TheWebShop.Models
         }
         internal static void ShowSearchResults(Customer customer)
         {
-            Console.Clear();
-            Cart.PrintCart(customer);
-            Console.WriteLine("Fritextsökning för produkter");
-            var input = Console.ReadLine();
-            using var dbContext = new TheWebShopContext();
-            var show = dbContext.Products
-                .Include(x => x.Supplier)
-                .Include(x => x.Category)
-                .Where(x => x.Name.Contains(input) || x.DetailedInfo.Contains(input) || x.Supplier.Name.Contains(input) || x.Category.Name.Contains(input));
-            Console.WriteLine();
-            if (show.Count() > 0)
+            var searchLoop = true;
+            while (searchLoop)
             {
-                foreach (var p in show)
+                Console.Clear();
+                Console.WriteLine("Fritextsökning för produkter");
+                Console.WriteLine("Tryck [0] för att backa");
+                Cart.PrintCart(customer);
+
+                var input = Console.ReadLine();
+                if (input is "0")
                 {
-                    Console.WriteLine("[" + p.Id + "] " + p.Name + " - " + p.DetailedInfo + " - " + p.Supplier.Name);
+                    searchLoop = false;
                 }
+
+                using var dbContext = new TheWebShopContext();
+                var show = dbContext.Products
+                    .Include(x => x.Supplier)
+                    .Include(x => x.Category)
+                    .Where(x => x.Name.Contains(input) || x.DetailedInfo.Contains(input) || x.Supplier.Name.Contains(input) || x.Category.Name.Contains(input));
+
+                Console.WriteLine();
+                if (show.Any())
+                {
+                    foreach (var p in show)
+                    {
+                        Console.WriteLine($"[{p.Id}] {p.Name} - {p.Price} - {p.DetailedInfo}");
+                    }
+                    Console.WriteLine();
+
+                    // Alternativ att gå in i produkt
+                    Console.WriteLine("Ange Id för att läsa mer om produkten eller [0] för att backa");
+                    var inputId = Console.ReadLine();
+                    if (int.TryParse(inputId, out int id))
+                    {
+                        if (id is 0)
+                        {
+                            searchLoop = false;
+                            break;
+                        }
+                        else if (dbContext.Products.Any(x => x.Id == id))
+                        {
+                            var product = dbContext.Products
+                                .Where(x => x.Id == id)
+                                .FirstOrDefault();
+                            ShowProduct(product, customer, dbContext);
+                            //break;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Fanns ingen produkt på valt id. Tryck valfri tangent för att fortsätta");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Felaktig inmatning. Tryck valfri tangent för att fortsätta");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Sökningen gav ingen träff. Tryck valfri tangent för att fortsätta");
+                }
+                Console.ReadKey(true);
             }
-            else
-            {
-                Console.WriteLine("Sökningen gav ingen träff");
-            }
-            Console.WriteLine();
-            Console.WriteLine("Tryck på valfri knapp för att söka igen");
-            Console.ReadKey(true);
         }
 
     }
