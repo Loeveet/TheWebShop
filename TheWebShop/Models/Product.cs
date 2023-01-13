@@ -294,26 +294,25 @@ namespace TheWebShop.Models
                         //        Products = new List<Product>()
                         //    };
                         //}
-                        var customersCart = dbContext.Carts
-                            .Include(x => x.Products)
-                            .Where(x => x.CustomerId == customer.Id)
-                            .FirstOrDefault();
+                        //var customersCart = dbContext.Carts
+                        //    .Include(x => x.Product)
+                        //    .Where(x => x.CustomerId == customer.Id)
+                        //    .FirstOrDefault();
+
+                        customer.Carts = new List<Cart>();
 
                         for (int i = 0; i < customeranswer; i++)
                         {
-                            customersCart.Products.Add(product);
+                            customer.Carts.Add(new Cart { CustomerId = customer.Id, ProductId = product.Id });
                         }
                         dbContext.SaveChanges();
 
                         showProdLoop = false;
                         Console.WriteLine(customeranswer + " produkter tillagda i varukorg");
-                        foreach (var x in dbContext.Carts.Include(x => x.Products).Include(x => x.Customer))
+                        foreach (var x in dbContext.Carts.Include(x => x.Product).Include(x => x.Customer))
                         {
                             Console.WriteLine(x.Customer.FirstName);
-                            foreach (var y in x.Products)
-                            {
-                                Console.WriteLine("\t" + y.Name);
-                            }
+                            Console.WriteLine("\t" + x.Product.Name);
                         }
                         Console.ReadKey();
                     }

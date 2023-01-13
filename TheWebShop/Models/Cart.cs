@@ -10,8 +10,9 @@ namespace TheWebShop.Models
     {
         public int Id { get; set; }
         public int CustomerId { get; set; }
+        public int ProductId { get; set; }
         public virtual Customer Customer { get; set; }
-        public virtual List<Product>? Products { get; set; }
+        public virtual Product Product { get; set; }
         internal static void HandlingShoppingCart()
         {
             // Metod för att hantera varukorg
