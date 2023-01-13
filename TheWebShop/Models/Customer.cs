@@ -138,7 +138,7 @@ namespace TheWebShop.Models
             while (customerLoop)
             {
                 Console.Clear();
-
+                Cart.PrintCart(customer);
                 Console.WriteLine($"Välkommen {(customer == null ? "gäst" : customer.FirstName)} till Webbshoppen!\n");
 
 
@@ -168,6 +168,7 @@ namespace TheWebShop.Models
                 }
 
                 Console.WriteLine();
+                Console.WriteLine("[F]ritextsök på produkter");
                 Console.WriteLine("[S]hopsida");
                 Console.WriteLine("[V]arukorg");
                 Console.WriteLine("[B]acka");
@@ -175,6 +176,10 @@ namespace TheWebShop.Models
                 var choice = Console.ReadKey(true).KeyChar;
                 switch (choice)
                 {
+                    case 'F':
+                    case 'f':
+                        Product.ShowSearchResults(customer);
+                        break;
                     case 'S':
                     case 's':
                         Managing.ShoppingPage(customer);

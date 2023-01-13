@@ -135,7 +135,7 @@ namespace TheWebShop.Models
                             Price = price,
                             DetailedInfo = detailedInfo,
                             Quantity = quantity,
-                            //CategoryId = categoryId,
+                            CategoryId = categoryId,
                             SupplierId = supplierId
                         });
                         dbContext.SaveChanges();
@@ -278,6 +278,7 @@ namespace TheWebShop.Models
                 while (showProdLoop)
                 {
                     Console.Clear();
+                    Cart.PrintCart(customer);
                     Console.WriteLine(product.Quantity + " finns i lager");
                     Console.WriteLine();
                     Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
@@ -285,36 +286,15 @@ namespace TheWebShop.Models
                     var customeranswer = Convert.ToInt32(Console.ReadLine());
                     if (customeranswer != 0 && customeranswer <= product.Quantity)
                     {
-                        // TODO: Här slutade vi
-
-                        //if (customer.Cart is null)
-                        //{
-                        //    customer.Cart = new()
-                        //    {
-                        //        Products = new List<Product>()
-                        //    };
-                        //}
-                        //var customersCart = dbContext.Carts
-                        //    .Include(x => x.Product)
-                        //    .Where(x => x.CustomerId == customer.Id)
-                        //    .FirstOrDefault();
-
                         customer.Carts = new List<Cart>();
 
                         for (int i = 0; i < customeranswer; i++)
                         {
-                            customer.Carts.Add(new Cart { CustomerId = customer.Id, ProductId = product.Id });
+                            dbContext.Add(new Cart { CustomerId = customer.Id, ProductId = product.Id });
+                            product.Quantity--;
                         }
                         dbContext.SaveChanges();
-
                         showProdLoop = false;
-                        Console.WriteLine(customeranswer + " produkter tillagda i varukorg");
-                        foreach (var x in dbContext.Carts.Include(x => x.Product).Include(x => x.Customer))
-                        {
-                            Console.WriteLine(x.Customer.FirstName);
-                            Console.WriteLine("\t" + x.Product.Name);
-                        }
-                        Console.ReadKey();
                     }
                     else if (customeranswer != 0 && customeranswer > product.Quantity)
                     {
@@ -328,8 +308,12 @@ namespace TheWebShop.Models
                 }
             }
         }
-        internal static void ShowContains(string input)
+        internal static void ShowSearchResults(Customer customer)
         {
+            Console.Clear();
+            Cart.PrintCart(customer);
+            Console.WriteLine("Fritextsökning för produkter");
+            var input = Console.ReadLine();
             using var dbContext = new TheWebShopContext();
             var show = dbContext.Products
                 .Include(x => x.Supplier)
@@ -340,7 +324,7 @@ namespace TheWebShop.Models
             {
                 foreach (var p in show)
                 {
-                    Console.WriteLine(p.Name + " - " + p.DetailedInfo + " - " + p.Supplier.Name);
+                    Console.WriteLine("[" + p.Id + "] " + p.Name + " - " + p.DetailedInfo + " - " + p.Supplier.Name);
                 }
             }
             else

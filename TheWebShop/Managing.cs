@@ -54,6 +54,7 @@ namespace TheWebShop
             while (shoppingLoop)
             {
                 Console.Clear();
+                Cart.PrintCart(customer);
                 Console.WriteLine("Kategorier");
                 foreach (var c in dbContext.Categories
                     .Include(x => x.Products))
@@ -61,87 +62,74 @@ namespace TheWebShop
                     Console.WriteLine($"[{c.Id}] {c.Name}");
                 }
                 Console.WriteLine();
-                Console.Write("Ange text för att fritextsöka, annars ange Id för kategori för att se produkter eller [0] att backa menyn: ");
+                Console.Write("Ange Id för kategori för att se produkter eller [0] att backa menyn: ");
                 var search = Console.ReadLine();
                 int categoryId;
-                if (!int.TryParse(search, out categoryId))
+                if (int.TryParse(search, out categoryId))
                 {
-                    Product.ShowContains(search);
+                    var products = dbContext.Products
+                            .Where(x => x.Category.Id == categoryId);
+                    if (products.Any())
+                    {
+                        var category = dbContext.Categories
+                            .Where(x => x.Id == categoryId)
+                            .SingleOrDefault();
+                        var showProductLoop = true;
+                        while (showProductLoop)
+                        {
+                            Console.Clear();
+                            Console.WriteLine(category.Name);
+                            foreach (var p in products)
+                            {
+                                Console.WriteLine($"Id [{p.Id}] - {p.Name} - {p.Price} kr");
+                            }
+                            Console.WriteLine();
+                            Console.WriteLine("Välj Id för att läsa mer om produkten, eller ange [0] för att backa");
+                            var buyLoop = true;
+                            while (buyLoop)
+                            {
+                                Cart.PrintCart(customer);
+                                var input = Console.ReadLine();
+                                int productId = -1;
+                                while (!int.TryParse(input, out productId))
+                                {
+                                    Console.WriteLine("Felaktig inmatning, försök igen");
+                                    input = Console.ReadLine();
+                                }
+                                var product = dbContext.Products
+                                    .Where(x => x.Id == productId && x.Category.Id == categoryId)
+                                    //.Where(x => x.Id == productId && x.CategoryId == categoryId)
+                                    .FirstOrDefault();
+                                if (productId == 0)
+                                {
+                                    buyLoop = false;
+                                    showProductLoop = false;
+                                }
+                                else if (product is null)
+                                {
+                                    Console.WriteLine("Vald produkt finns ej, försök igen");
+                                }
+                                else
+                                {
+                                    Product.ShowProduct(product, customer, dbContext);
+                                    buyLoop = false;
+                                }
+                            }
+                        }
+                    }
                 }
                 else
                 {
-                    if (categoryId.ToString().Length > 2)
-                    {
-                        Product.ShowContains(search);
-                    }
-                    else
-                    {
-                        var products = dbContext.Products
-                            .Where(x => x.Category.Id == categoryId);
-                            //.Where(x => x.CategoryId == categoryId);
-                        if (products.Any())
-                        {
-                            var category = dbContext.Categories
-                                .Where(x => x.Id == categoryId)
-                                .SingleOrDefault();
-                            var showProductLoop = true;
-                            while (showProductLoop)
-                            {
-                                Console.Clear();
-                                Console.WriteLine(category.Name);
-                                foreach (var p in products)
-                                {
-                                    Console.WriteLine($"Id [{p.Id}] - {p.Name} - {p.Price} kr");
-                                }
-                                Console.WriteLine();
-                                Console.WriteLine("Välj Id för att läsa mer om produkten, eller ange [0] för att backa");
-                                var buyLoop = true;
-                                while (buyLoop)
-                                {
-                                    var input = Console.ReadLine();
-                                    int productId = -1;
-                                    while (!int.TryParse(input, out productId))
-                                    {
-                                        Console.WriteLine("Felaktig inmatning, försök igen");
-                                        input = Console.ReadLine();
-                                    }
-                                    var product = dbContext.Products
-                                        .Where(x => x.Id == productId && x.Category.Id == categoryId)
-                                        //.Where(x => x.Id == productId && x.CategoryId == categoryId)
-                                        .FirstOrDefault();
-                                    if (productId == 0)
-                                    {
-                                        buyLoop = false;
-                                        showProductLoop = false;
-                                    }
-                                    else if (product is null)
-                                    {
-                                        Console.WriteLine("Vald produkt finns ej, försök igen");
-                                    }
-                                    else
-                                    {
-                                        Product.ShowProduct(product, customer, dbContext);
-                                        buyLoop = false;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            if (categoryId == 0)
-                            {
-                                shoppingLoop = false;
-                            }
-                            else
-                            {
-                                Product.ShowContains(search);
-                            }
-                        }
-                    }
+                    Console.WriteLine("Felaktig inmatning, försök igen");
                 }
+                if (categoryId == 0)
+                {
+                    shoppingLoop = false;
+                }
+
             }
-        }     
-        
+        }
+
         public static void MenuAdmin()
         {
             var adminLoop = true;
