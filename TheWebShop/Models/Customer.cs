@@ -48,7 +48,6 @@ namespace TheWebShop.Models
             {
                 case 'G':
                 case 'g':
-                    //CustomerStartPage(null); // går vidare som gäst
                     CustomerStartPage(new Customer { FirstName = "Gäst", Carts = new List<Cart>() }); // går vidare som gäst
                     break;
                 case 'B':
@@ -233,7 +232,7 @@ namespace TheWebShop.Models
                         break;
                     case 'V':
                     case 'v':
-                        //ShoppingCart();
+                        ShoppingCart(customer, dbContext);
                         break;
                     case 'B':
                     case 'b':
@@ -245,6 +244,54 @@ namespace TheWebShop.Models
 
             }
         }
+
+        private static void ShoppingCart(Customer customer, TheWebShopContext dbContext)
+        {
+            Console.Clear();
+
+            Cart.PrintCart(customer);
+
+            Console.WriteLine();
+            Console.WriteLine("[1] Ändra antal");
+            Console.WriteLine("[2] Ta bort produkten");
+            Console.WriteLine("[3] Gå till kassan");
+            Console.WriteLine("[0] Backa");
+
+            var choice = Console.ReadKey(true).KeyChar;
+            switch (choice)
+            {
+                case '1':
+                    Console.WriteLine("Välj Id på den produkten du vill ändra antal på");
+                    var id = Managing.TryToParseInput();
+
+                    var products = customer.Carts
+                        .Where(x => x.ProductId == id)
+                        .ToList();
+                    if (products != null)
+                    {
+                        ChangeQuantity(products);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Vald produkt ingår ej bland de utvalda. Tryck valfri tangent för att fortsätta");
+                    }
+                    Console.ReadKey(true);
+                    break;
+                case '2':
+
+                default:
+                    break;
+            }
+        }
+
+        private static void ChangeQuantity(List<Cart> products)
+        {
+            foreach (var product in products)
+            {
+                Console.WriteLine(product.Product.Name);
+            }
+        }
+
         private static List<Product> Randomize(List<Product> products)
         {
             var random = new Random();
