@@ -15,7 +15,7 @@ namespace TheWebShop.Models
         public DbSet<Category> Categories { get; set; }
         public DbSet<Freight> Freights { get; set; }
         public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderDetail> OrderDetails { get; set; }
+        public DbSet<OrderProduct> OrderDetails { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }

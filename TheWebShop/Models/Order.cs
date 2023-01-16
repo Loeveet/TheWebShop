@@ -17,7 +17,7 @@ namespace TheWebShop.Models
         public virtual Customer Customer { get; set; }
         public virtual Freight Freight { get; set; }
         public virtual PaymentMethod PaymentMethod { get; set; }
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
+        public virtual ICollection<OrderProduct> OrderProducts { get; set; }
 
 
     }

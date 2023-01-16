@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -53,7 +54,7 @@ namespace TheWebShop.Models
                 case 'B':
                 case 'b':
                     Console.WriteLine("Välj befintligt kundId"); // välj befintlig kund
-                    int custId = Convert.ToInt32(Console.ReadLine());
+                    int custId = Managing.TryToParseInput();
                     var customer = dbContext.Customers
                         .Where(c => c.Id == custId)
                         .FirstOrDefault();
@@ -278,12 +279,97 @@ namespace TheWebShop.Models
                     Console.ReadKey(true);
                     break;
                 case '2':
-
+                    break;
+                case '3':
+                    GoToCheckout(customer, dbContext);
+                    break;
                 default:
                     break;
             }
         }
 
+        private static void GoToCheckout(Customer customer, TheWebShopContext dbContext)
+        {
+            double totalCost = 0;
+            var loop = true;
+            while (loop)
+            {
+                Console.Clear();
+                Cart.PrintCart(customer);
+                Console.WriteLine("Välj fraktmetod");
+                foreach (var f in dbContext.Freights)
+                {
+                    Console.WriteLine($"[{f.Id}] - {f.Name} - {f.Price}kr");
+                }
+                int id = Managing.TryToParseInput();
+                var freightMethodId = dbContext.Freights
+                    .Where(x => x.Id == id)
+                    .Select(x => x.Id)
+                    .FirstOrDefault();
+                Console.WriteLine("Välj betalmetod");
+                foreach (var f in dbContext.PaymentMethods)
+                {
+                    Console.WriteLine($"[{f.Id}] - {f.Name}");
+                }
+                int id2 = Managing.TryToParseInput();
+                var paymentMethodId = dbContext.PaymentMethods
+                    .Where(x => x.Id == id2)
+                    .Select(x => x.Id)
+                    .FirstOrDefault();
+
+
+                Order order = new Order
+                {
+                    CustomerId = customer.Id,
+                    FreightId = freightMethodId,
+                    PaymentMethodId = paymentMethodId,
+                    OrderDate = DateTime.Now
+                };
+                dbContext.Orders.Add(order);
+                dbContext.SaveChanges();
+                foreach (var x in dbContext.Carts.Include(x => x.Product).Where(x => x.CustomerId == customer.Id))
+                {
+                    OrderProduct orderProduct = new OrderProduct
+                    {
+                        OrderId = order.Id,
+                        ProductId = x.ProductId,
+                        UnitPrice = x.Product.Price
+
+                    };
+                    dbContext.OrderDetails.Add(orderProduct);
+                }
+                dbContext.SaveChanges();
+
+                var result = dbContext.OrderDetails
+                    .Where(x => x.OrderId == order.Id)
+                    .Include(x => x.Product)
+                    .ToList();
+
+                var result2 = result
+                    .GroupBy(x => x.Product);
+
+                foreach (var op in result2)
+                {
+                    totalCost += op.Key.Price * op.Count();
+                    Console.WriteLine($"{op.Key.Name} à {op.Key.Price} kronor, antal: {op.Count()} st. Totalpris: {op.Key.Price * op.Count()} kronor");
+                }
+                var freightCost = dbContext.Freights.Where(x => x.Id == freightMethodId).FirstOrDefault();
+                totalCost += freightCost.Price;
+                Console.WriteLine($"+ leverans: {freightCost.Price} kronor");
+                //Console.WriteLine($"+ betalning: {dbContext.PaymentMethods.Where(x => x.Id == paymentMethodId).Select(x => x.)}");
+                Console.WriteLine($"Totalpris: {totalCost} kronor");
+                
+                foreach(var x in dbContext.Carts.Where(x => x.CustomerId == customer.Id))
+                {
+                    dbContext.Carts.Remove(x);
+                }
+                dbContext.SaveChanges();
+
+                Console.ReadKey();
+                loop = false;
+
+            }
+        }
         private static void ChangeQuantity(List<Cart> products)
         {
             foreach (var product in products)
