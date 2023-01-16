@@ -318,6 +318,8 @@ namespace TheWebShop.Models
                     .FirstOrDefault();
 
 
+                //TODO här slutade vi och den visar inte hela ordern. Visar bara shipping total kostnaden. Kom på hur vi ska köra med sparningen.
+                // Spara lokalt för att slippa skapa order o orderdetails osv
                 Order order = new Order
                 {
                     CustomerId = customer.Id,
@@ -326,24 +328,11 @@ namespace TheWebShop.Models
                     OrderDate = DateTime.Now
                 };
                 dbContext.Orders.Add(order);
-                dbContext.SaveChanges();
-                foreach (var x in dbContext.Carts.Include(x => x.Product).Where(x => x.CustomerId == customer.Id))
-                {
-                    OrderProduct orderProduct = new OrderProduct
-                    {
-                        OrderId = order.Id,
-                        ProductId = x.ProductId,
-                        UnitPrice = x.Product.Price
-
-                    };
-                    dbContext.OrderDetails.Add(orderProduct);
-                }
-                dbContext.SaveChanges();
 
                 var result = dbContext.OrderDetails
-                    .Where(x => x.OrderId == order.Id)
-                    .Include(x => x.Product)
-                    .ToList();
+                            .Where(x => x.OrderId == order.Id)
+                            .Include(x => x.Product)
+                            .ToList();
 
                 var result2 = result
                     .GroupBy(x => x.Product);
@@ -358,16 +347,54 @@ namespace TheWebShop.Models
                 Console.WriteLine($"+ leverans: {freightCost.Price} kronor");
                 //Console.WriteLine($"+ betalning: {dbContext.PaymentMethods.Where(x => x.Id == paymentMethodId).Select(x => x.)}");
                 Console.WriteLine($"Totalpris: {totalCost} kronor");
-                
-                foreach(var x in dbContext.Carts.Where(x => x.CustomerId == customer.Id))
-                {
-                    dbContext.Carts.Remove(x);
-                }
-                dbContext.SaveChanges();
 
-                Console.ReadKey();
-                loop = false;
+                Console.WriteLine("Tryck [1] för att slutföra köpet");
+                Console.WriteLine("Tryck [2] börja om utcheckningen");
+                Console.WriteLine("Tryck [0] för att backa");
+                var choice = Console.ReadKey(true).KeyChar;
+                switch (choice)
+                {                   
+                    case '1':
+                        //Order order = new Order
+                        //{
+                        //    CustomerId = customer.Id,
+                        //    FreightId = freightMethodId,
+                        //    PaymentMethodId = paymentMethodId,
+                        //    OrderDate = DateTime.Now
+                        //};
+                        //dbContext.Orders.Add(order);
+                        dbContext.SaveChanges();
+                        foreach (var x in dbContext.Carts.Include(x => x.Product).Where(x => x.CustomerId == customer.Id))
+                        {
+                            OrderProduct orderProduct = new OrderProduct
+                            {
+                                OrderId = order.Id,
+                                ProductId = x.ProductId,
+                                UnitPrice = x.Product.Price
 
+                            };
+                            dbContext.OrderDetails.Add(orderProduct);
+                        }
+                        dbContext.SaveChanges();
+
+                        
+
+                        foreach (var x in dbContext.Carts.Where(x => x.CustomerId == customer.Id))
+                        {
+                            dbContext.Carts.Remove(x);
+                        }
+                        dbContext.SaveChanges();
+
+                        Console.ReadKey();
+                        loop = false;
+
+                        break;
+                    case '2':
+                        break;
+                    case '0':
+                        loop = false;                      
+                        break;                
+                }               
             }
         }
         private static void ChangeQuantity(List<Cart> products)
