@@ -54,7 +54,7 @@ namespace TheWebShop.Models
                 case 'b':
                     Console.WriteLine("Välj befintligt kundId"); // välj befintlig kund
                     int custId = Convert.ToInt32(Console.ReadLine());
-                    var customer = dbContext.Customers                       
+                    var customer = dbContext.Customers
                         .Where(c => c.Id == custId)
                         .FirstOrDefault();              //Todo En kontroll så att det finns en kund på det Id.
                     CustomerStartPage(customer);
@@ -77,22 +77,40 @@ namespace TheWebShop.Models
             var firstName = Console.ReadLine();
             Console.Write("Ange efternamn: ");
             var lastName = Console.ReadLine();
+
+
             Console.WriteLine("Registrerade länder");
             foreach (var c in dbContext.Countries)
             {
                 Console.WriteLine($"[{c.Id}] - {c.Name}");
             }
-            Console.Write("Ange landsId: ");
-            int countryId = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Välj landsId från listan eller skriv land om du vill lägga till nytt land: ");
+            var country = Console.ReadLine();
+            int id;
+            if (!int.TryParse(country, out id))
+            {
+                id = Managing.Create(new Country(), dbContext);
+            }
+
+
             Console.WriteLine("Registrerade städer i valt land");
             foreach (var city in dbContext.Cities
-                .Where(x => x.CountryId == countryId))
+                .Where(x => x.CountryId == id))
             {
                 Console.WriteLine($"[{city.Id}] - {city.Name}");
 
             }
-            Console.Write("Ange stadsId: ");
-            int cityId = Convert.ToInt32(Console.ReadLine());
+            Console.Write("Välj stadsId från listan eller skriv in ny stad: ");
+            var cityId = Console.ReadLine();
+            int cId;
+            if (!int.TryParse(cityId, out cId))
+            {
+                cityId = Managing.Create(new City(), dbContext, id);
+            }
+
+
+
+
             Console.Write("Ange gatuadress: ");
             var adress = Console.ReadLine();
             Console.Write("Ange postnummer: ");
@@ -114,7 +132,7 @@ namespace TheWebShop.Models
             {
                 FirstName = firstName,
                 LastName = lastName,
-                CityId = cityId,
+                CityId = Convert.ToInt32(cityId),
                 Street = adress,
                 ZipCode = zipCode,
                 Email = email,

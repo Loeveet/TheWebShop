@@ -38,10 +38,7 @@ namespace TheWebShop.Models
                 {
                     case '1':
                         // Klar
-                        Console.WriteLine("Ange namn på ny betalmetod");
-                        var name = Console.ReadLine();
-                        dbContext.PaymentMethods.Add(new PaymentMethod { Name = name });
-                        dbContext.SaveChanges();
+                        Create(new PaymentMethod(), dbContext);
                         break;
                     case '2':
                         // Klar
@@ -111,6 +108,13 @@ namespace TheWebShop.Models
                         break;
                 }
             }
+        }
+        internal static void Create(PaymentMethod paymentMethod, TheWebShopContext dbContext)
+        {
+            Console.WriteLine("Ange namn på ny betalmetod");
+            paymentMethod.Name = Console.ReadLine();
+            dbContext.Add(paymentMethod);
+            dbContext.SaveChanges();
         }
 
     }

@@ -39,12 +39,7 @@ namespace TheWebShop.Models
                 {
                     case '1':
                         // Klar
-                        Console.WriteLine("Ange namn på ny kategori");
-                        var name = Console.ReadLine();
-                        Console.WriteLine("Ange beskrivning på " + name);
-                        var description = Console.ReadLine();
-                        dbContext.Categories.Add(new Category { Name = name, Description = description });
-                        dbContext.SaveChanges();
+                        Create(new Category(), dbContext);
                         break;
                     case '2':
                         // Klar
@@ -137,6 +132,13 @@ namespace TheWebShop.Models
                         break;
                 }
             }
+        }
+        internal static void Create(Category category, TheWebShopContext dbContext)
+        {
+            Console.WriteLine("Ange namn på ny kategori");
+            var name = Console.ReadLine();
+            dbContext.Add(new Category { Name = name });
+            dbContext.SaveChanges();
         }
     }
 }

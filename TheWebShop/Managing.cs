@@ -224,26 +224,41 @@ namespace TheWebShop
             }
         }
 
-        internal static void Create(PaymentMethod paymentMethod, TheWebShopContext dbContext)
-        {
-            Console.WriteLine("Ange namn på ny betalmetod");
-            var name = Console.ReadLine();
-            dbContext.Add(new PaymentMethod { Name = name });
-            dbContext.SaveChanges();
-        }
-        internal static void Create(Country country, TheWebShopContext dbContext)
+
+        internal static int Create(Country country, TheWebShopContext dbContext)
         {
             Console.WriteLine("Ange namn på nytt land");
-            var name = Console.ReadLine();
-            dbContext.Add(new Country { Name = name });
+            country.Name = Console.ReadLine();
+            dbContext.Add(country);
             dbContext.SaveChanges();
+            var countryId = dbContext.Countries
+                .Where(x => x.Id == country.Id)
+                .Select(x => x.Id)
+                .FirstOrDefault();
+            Console.WriteLine("Vill du även lägga till en stad i landet? [J/N]");
+            var answer = Console.ReadKey(true).KeyChar;
+            switch (answer)
+            {
+                case 'J':
+                case 'j':
+                    Create(new City(), dbContext, countryId);
+                        break;
+                default:
+                    Console.WriteLine("Du valde att inte lägga till en stad");
+                    break;
+            }
+            return countryId;
         }
-        internal static void Create(Category category, TheWebShopContext dbContext)
+
+        internal static string Create(City city, TheWebShopContext dbContext, int countryId)
         {
-            Console.WriteLine("Ange namn på ny kategori");
-            var name = Console.ReadLine();
-            dbContext.Add(new Category { Name = name });
+            city.CountryId = countryId;
+            Console.WriteLine("Ange namn på ny stad");
+            city.Name = Console.ReadLine();
+            dbContext.Add(city);
             dbContext.SaveChanges();
+
+            return city.Id.ToString();
         }
     }
 }
