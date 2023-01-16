@@ -44,15 +44,7 @@ namespace TheWebShop.Models
                     case '2':
                         // Klar
                         Console.WriteLine("Ange id på den kategorin du vill ta bort");
-                        var input = Console.ReadLine();
-
-                        // TODO: Gör till egen metod
-                        int id;
-                        while (!int.TryParse(input, out id))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input = Console.ReadLine();
-                        }
+                        int id = Managing.TryToParseInput();
 
                         var category = dbContext.Categories.Where(x => x.Id == id).FirstOrDefault();
                         if (category is not null)
@@ -82,14 +74,8 @@ namespace TheWebShop.Models
                         break;
                     case '3':
                         Console.WriteLine("Ange id på den kategorin du vill ändra");
-                        var input2 = Console.ReadLine();
 
-                        int id2;
-                        while (!int.TryParse(input2, out id2))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input2 = Console.ReadLine();
-                        }
+                        int id2 = Managing.TryToParseInput();
 
                         var category2 = dbContext.Categories.Where(x => x.Id == id2).FirstOrDefault();
                         if (category2 is not null)

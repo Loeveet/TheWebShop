@@ -39,6 +39,7 @@ namespace TheWebShop
                 }
             }
         }
+
         internal static void ShoppingPage(Customer customer)
         {
             using var dbContext = new TheWebShopContext();
@@ -81,16 +82,11 @@ namespace TheWebShop
                             while (buyLoop)
                             {
                                 Cart.PrintCart(customer);
-                                var input = Console.ReadLine();
-                                int productId = -1;
-                                while (!int.TryParse(input, out productId))
-                                {
-                                    Console.WriteLine("Felaktig inmatning, försök igen");
-                                    input = Console.ReadLine();
-                                }
+                                int productId = TryToParseInput();
+                                //int productId = -1;
+                                
                                 var product = dbContext.Products
                                     .Where(x => x.Id == productId && x.Category.Id == categoryId)
-                                    //.Where(x => x.Id == productId && x.CategoryId == categoryId)
                                     .FirstOrDefault();
                                 if (productId == 0)
                                 {
@@ -165,6 +161,7 @@ namespace TheWebShop
                 }
             }
         }
+
         private static void MenuProductCategorySupplier()
         {
             var loop = true;
@@ -196,6 +193,7 @@ namespace TheWebShop
                 }
             }
         }
+
         private static void MenuCountryCity()
         {
             var locationLoop = true;
@@ -223,7 +221,6 @@ namespace TheWebShop
                 }
             }
         }
-
 
         internal static int Create(Country country, TheWebShopContext dbContext)
         {
@@ -259,6 +256,18 @@ namespace TheWebShop
             dbContext.SaveChanges();
 
             return city.Id.ToString();
+        }
+
+        public static int TryToParseInput()
+        {
+            var input = Console.ReadLine();
+            int id;
+            while (!int.TryParse(input, out id))
+            {
+                Console.WriteLine("Felaktig inmatning, försök igen");
+                input = Console.ReadLine(); 
+            }
+            return id;
         }
     }
 }

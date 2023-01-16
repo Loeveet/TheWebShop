@@ -43,13 +43,7 @@ namespace TheWebShop.Models
                     case '2':
                         // Klar
                         Console.WriteLine("Ange id på den betalmetod du vill ta bort");
-                        var input = Console.ReadLine();
-                        int id;
-                        while (!int.TryParse(input, out id))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input = Console.ReadLine();
-                        }
+                        int id = Managing.TryToParseInput();
 
                         var paymentMethod = dbContext.PaymentMethods.Where(x => x.Id == id).FirstOrDefault();
                         if (paymentMethod is not null)
@@ -79,14 +73,8 @@ namespace TheWebShop.Models
                         break;
                     case '3':
                         Console.WriteLine("Ange id på betalmetoden du vill ändra namn på");
-                        var input2 = Console.ReadLine();
 
-                        int id2;
-                        while (!int.TryParse(input2, out id2))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input2 = Console.ReadLine();
-                        }
+                        int id2 = Managing.TryToParseInput();
 
                         var paymentMethod2 = dbContext.PaymentMethods.Where(x => x.Id == id2).FirstOrDefault();
                         if (paymentMethod2 is not null)

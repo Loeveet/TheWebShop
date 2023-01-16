@@ -86,14 +86,8 @@ namespace TheWebShop.Models
                         break;
                     case '3':
                         Console.WriteLine("Ange id på den fraktmetod du vill ändra");
-                        var input2 = Console.ReadLine();
 
-                        int id2;
-                        while (!int.TryParse(input2, out id2))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input2 = Console.ReadLine();
-                        }
+                        int id2 = Managing.TryToParseInput();
 
                         var freight2 = dbContext.Freights.Where(x => x.Id == id2).FirstOrDefault();
                         if (freight2 is not null)

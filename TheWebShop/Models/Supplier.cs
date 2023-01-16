@@ -50,15 +50,7 @@ namespace TheWebShop.Models
                     case '2':
                         // Klar
                         Console.WriteLine("Ange id på leverantören du vill ta bort");
-                        var input = Console.ReadLine();
-
-                        // TODO: Gör till egen metod
-                        int id;
-                        while (!int.TryParse(input, out id))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input = Console.ReadLine();
-                        }
+                        int id = Managing.TryToParseInput();
 
                         var supplier = dbContext.Suppliers.Where(x => x.Id == id).FirstOrDefault();
                         if (supplier is not null)

@@ -47,16 +47,8 @@ namespace TheWebShop.Models
                         }
                         Console.WriteLine($"[0] för att backa\n");
                         Console.WriteLine("Ange id på landet du vill lägga till en stad i");
-                        var input = Console.ReadLine();
 
-                        // TODO: Gör till egen metod
-                        int id;
-                        while (!int.TryParse(input, out id))
-
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input = Console.ReadLine();
-                        }
+                        int id = Managing.TryToParseInput();
                         if (id == 0)
                         {
                             break;
@@ -79,15 +71,8 @@ namespace TheWebShop.Models
                     case '2':
                         // Klar
                         Console.WriteLine("Ange id på staden du vill ta bort");
-                        var input2 = Console.ReadLine();
 
-                        // TODO: Gör till egen metod
-                        int id2;
-                        while (!int.TryParse(input2, out id2))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input2 = Console.ReadLine();
-                        }
+                        int id2 = Managing.TryToParseInput();
 
                         var city = dbContext.Cities.Where(x => x.Id == id2).FirstOrDefault();
                         if (city is not null)
@@ -117,14 +102,8 @@ namespace TheWebShop.Models
                         break;
                     case '3':
                         Console.WriteLine("Ange id på staden du vill ändra");
-                        var input3 = Console.ReadLine();
 
-                        int id3;
-                        while (!int.TryParse(input3, out id3))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input3 = Console.ReadLine();
-                        }
+                        int id3 = Managing.TryToParseInput();
 
                         var city2 = dbContext.Cities.Where(x => x.Id == id3).FirstOrDefault();
                         if (city2 is not null)

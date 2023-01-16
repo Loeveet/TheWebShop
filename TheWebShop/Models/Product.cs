@@ -75,13 +75,8 @@ namespace TheWebShop.Models
                         while (!exitLoop)
                         {
                             Console.Write("Ange id på leverantör: ");
-                            var input4 = Console.ReadLine();
 
-                            while (!int.TryParse(input4, out supplierId))
-                            {
-                                Console.WriteLine("Felaktig inmatning, försök igen");
-                                input4 = Console.ReadLine();
-                            }
+                            supplierId = Managing.TryToParseInput();
 
                             var supplier = dbContext.Suppliers.Where(x => x.Id == supplierId).FirstOrDefault();
                             if (supplier is not null)
@@ -104,22 +99,17 @@ namespace TheWebShop.Models
                         while (!exitLoop)
                         {
                             Console.Write("Ange id på kategori: ");
-                            var input4 = Console.ReadLine();
-
-                            while (!int.TryParse(input4, out categoryId))
-                            {
-                                Console.WriteLine("Felaktig inmatning, försök igen");
-                                input4 = Console.ReadLine();
-                            }
+                            categoryId = Managing.TryToParseInput();
 
                             var category = dbContext.Categories.Where(x => x.Id == categoryId).FirstOrDefault();
                             if (category is not null)
                             {
                                 exitLoop = true;
                             }
-                            else // TODO Lägga in metod för att lägga till kategori
+                            else // TODO Lägga in metod för att lägga till kategori, se utkommenterat
                             {
                                 Console.WriteLine("Kategorin fanns ej. Tryck valfri tangent");
+                                //Category.Create(new Category(), dbContext);
                                 Console.ReadKey(true);
                             }
                         }
@@ -143,13 +133,7 @@ namespace TheWebShop.Models
                     case '2':
 
                         Console.WriteLine("Ange id på produkten du vill ta bort");
-                        var input2 = Console.ReadLine();
-                        int id2;
-                        while (!int.TryParse(input2, out id2))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input2 = Console.ReadLine();
-                        }
+                        int id2 = Managing.TryToParseInput();
 
                         var product2 = dbContext.Products.Where(x => x.Id == id2).FirstOrDefault();
                         if (product2 is not null)
@@ -178,14 +162,8 @@ namespace TheWebShop.Models
                         break;
                     case '3':
                         Console.WriteLine("Ange id på den produkten du vill ändra");
-                        var input3 = Console.ReadLine();
 
-                        int id3;
-                        while (!int.TryParse(input3, out id3))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input3 = Console.ReadLine();
-                        }
+                        int id3 = Managing.TryToParseInput();
 
                         var product3 = dbContext.Products.Where(x => x.Id == id3).FirstOrDefault();
                         if (product3 is not null)
@@ -259,6 +237,7 @@ namespace TheWebShop.Models
                 }
             }
         }
+
         internal static void ShowProduct(Product product, Customer customer, TheWebShopContext dbContext)
         {
             var showProdLoop = true;
@@ -283,14 +262,25 @@ namespace TheWebShop.Models
                     var customerAnswer = Convert.ToInt32(Console.ReadLine());
                     if (customerAnswer != 0 && customerAnswer <= product.Quantity)
                     {
-                        customer.Carts = new List<Cart>();
-
-                        for (int i = 0; i < customerAnswer; i++)
+                        //customer.Carts = new List<Cart>();
+                        if (customer.FirstName != "Gäst")
                         {
-                            dbContext.Add(new Cart { CustomerId = customer.Id, ProductId = product.Id });
-                            product.Quantity--;
+                            for (int i = 0; i < customerAnswer; i++)
+                            {
+                                dbContext.Add(new Cart { CustomerId = customer.Id, ProductId = product.Id });
+                                product.Quantity--;
+                            }
+                            dbContext.SaveChanges();
                         }
-                        dbContext.SaveChanges();
+                        else
+                        {
+                            // TODO: Kan vara problem att ta product.Quantity-- om man stänger ner programmet som gäst??
+                            for (int i = 0; i < customerAnswer; i++)
+                            {
+                                customer.Carts.Add(new Cart { Product = product });
+                                product.Quantity--;
+                            }
+                        }
                         Console.WriteLine($"{customerAnswer} st {product.Name} är tillagt i varukorgen");
                         showProdLoop = false;
                     }
@@ -306,6 +296,7 @@ namespace TheWebShop.Models
                 }
             }
         }
+
         internal static void ShowSearchResults(Customer customer)
         {
             var searchLoop = true;

@@ -48,7 +48,8 @@ namespace TheWebShop.Models
             {
                 case 'G':
                 case 'g':
-                    CustomerStartPage(null); // går vidare som gäst
+                    //CustomerStartPage(null); // går vidare som gäst
+                    CustomerStartPage(new Customer { FirstName = "Gäst", Carts = new List<Cart>() }); // går vidare som gäst
                     break;
                 case 'B':
                 case 'b':
@@ -56,7 +57,7 @@ namespace TheWebShop.Models
                     int custId = Convert.ToInt32(Console.ReadLine());
                     var customer = dbContext.Customers
                         .Where(c => c.Id == custId)
-                        .FirstOrDefault();              //Todo En kontroll så att det finns en kund på det Id.
+                        .FirstOrDefault();
                     CustomerStartPage(customer);
                     break;
                 case 'N':
@@ -158,7 +159,7 @@ namespace TheWebShop.Models
             {
                 Console.Clear();
                 Cart.PrintCart(customer);
-                Console.WriteLine($"Välkommen {(customer == null ? "gäst" : customer.FirstName)} till Webbshoppen!\n");
+                Console.WriteLine($"Välkommen {customer.FirstName} till Webbshoppen!\n");
 
 
                 Console.WriteLine("Utvalda produkter:");

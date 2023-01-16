@@ -25,15 +25,22 @@ namespace TheWebShop.Models
             int top = 2;
             double totalCost = 0;
             using var dbContext = new TheWebShopContext();
-            var result = dbContext.Carts
+            var result = new List<Cart>();
+            if (customer.FirstName != "Gäst")
+            {
+                result = dbContext.Carts
                 .Where(x => x.CustomerId == customer.Id)
                 .Include(x => x.Product)
                 .ToList();
-
+            }
+            else
+            {
+                result = customer.Carts.ToList();
+            }
             var myCart = result
                 .GroupBy(x => x.Product);
 
-            Console.SetCursorPosition(left, top-1);
+            Console.SetCursorPosition(left, top - 1);
             Console.WriteLine(customer.FirstName);
             Console.SetCursorPosition(left, top);
             Console.WriteLine("-----------------------------------------------------");
@@ -43,10 +50,10 @@ namespace TheWebShop.Models
                 top++;
                 Console.SetCursorPosition(left, top);
                 Console.WriteLine($"{c.Key.Name} à {c.Key.Price} kr - {c.Count()} st - Totalt per produkt {c.Key.Price * c.Count()} kr");
-            }         
-            Console.SetCursorPosition(left, top+1);
+            }
+            Console.SetCursorPosition(left, top + 1);
             Console.WriteLine("-----------------------------------------------------");
-            Console.SetCursorPosition(left, top+2);
+            Console.SetCursorPosition(left, top + 2);
             Console.WriteLine($"Totalt {totalCost} kr");
             Console.SetCursorPosition(StartLeft, StartTop);
         }
