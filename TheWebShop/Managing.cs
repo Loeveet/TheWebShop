@@ -139,7 +139,7 @@ namespace TheWebShop
                         MenuProductCategorySupplier();
                         break;
                     case '2':
-                        // Customer
+                        HandlingCustomers();
                         break;
                     case '3':
                         PaymentMethod.HandlingPaymentMethod();
@@ -160,6 +160,115 @@ namespace TheWebShop
                         break;
                 }
             }
+        }
+
+
+        //TODO HÄR ÄR VI, Hantera kunder som admin. Uppdatera, Beställningshistorik. Redigera koden nedan. 
+        private static void HandlingCustomers()
+        {
+            using var dbContext = new TheWebShopContext();
+            var exitLoop = false;
+            var loop = true;
+            while (loop)
+            {
+                Console.Clear();
+
+                //Det kan bli tokigt ifall man skulle ha extremt många kunder registrerade. 
+                //Reflektera över annan potentiel lösning på redovinsning med Micke
+
+                Console.WriteLine($"Id Namn\t\tMail");
+                foreach (var customer in dbContext.Customers)
+                {
+                    Console.WriteLine($"[{customer.Id}] {customer.FirstName + ' ' + customer.LastName}\t{customer.Email}");
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("[1] Ändra kunduppgifter");
+                Console.WriteLine("[2] Se vald kunds beställningshistorik");
+                Console.WriteLine("[0] Backa meny");
+
+                var choice = Console.ReadKey(true).KeyChar;
+                switch (choice)
+                {                      
+                    case '1':
+                        Console.WriteLine("Ange id på den kunden du vill ändra uppgifterna på");
+
+                        int id3 = Managing.TryToParseInput();
+
+                        var product3 = dbContext.Products.Where(x => x.Id == id3).FirstOrDefault();
+                        if (product3 is not null)
+                        {
+                            Console.WriteLine($"Ange vad du vill ändra på");
+                            Console.WriteLine("[N]amn");
+                            Console.WriteLine("[P]ris");
+                            Console.WriteLine("[B]eskrivning");
+                            Console.WriteLine("[L]agersaldo");
+                            Console.WriteLine("[U]tvald");
+
+                            var answer2 = Console.ReadKey(true).KeyChar;
+                            switch (answer2)
+                            {
+                                case 'N':
+                                case 'n':
+                                    Console.Write("Ange nytt namn: ");
+                                    product3.Name = Console.ReadLine();
+                                    dbContext.SaveChanges();
+                                    break;
+                                case 'P':
+                                case 'p':
+                                    Console.WriteLine("Nuvarande pris: " + product3.Price);
+                                    Console.Write("Ange nytt pris: ");
+                                    product3.Price = Convert.ToInt32(Console.ReadLine());
+                                    dbContext.SaveChanges();
+                                    break;
+                                case 'B':
+                                case 'b':
+                                    Console.WriteLine("Nuvarande beskrivning: " + product3.DetailedInfo);
+                                    Console.Write("Ange ny beskrivning: ");
+                                    product3.DetailedInfo = Console.ReadLine();
+                                    dbContext.SaveChanges();
+                                    break;
+                                case 'L':
+                                case 'l':
+                                    Console.WriteLine("Nuvarande lagersaldo: " + product3.Quantity);
+                                    Console.Write("Ange nytt lagersaldo: ");
+                                    product3.Quantity = Convert.ToInt32(Console.ReadLine());
+                                    dbContext.SaveChanges();
+                                    break;
+                                case 'U':
+                                case 'u':
+                                    Console.Write(product3.Name + " är ");
+                                    Console.WriteLine(product3.ChosenProduct == true ? "utvald produkt" : "ej utvald produkt");
+                                    Console.Write("Vill du ändra utvald produkt?: ");
+                                    var chosenProduct1 = Console.ReadLine().ToLower();
+                                    if (chosenProduct1 == "ja")
+                                    {
+                                        product3.ChosenProduct = !product3.ChosenProduct;
+                                        dbContext.SaveChanges();
+                                    }
+                                    break;
+                                default:
+                                    Console.WriteLine("Du valde att inte ändra info om produkten. Tryck valfri tangent");
+                                    Console.ReadKey(true);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Produkten fanns ej. Tryck valfri tangent");
+                            Console.ReadKey(true);
+                        }
+                        break;
+                    case '2':
+                        break;
+                    case '0':
+                        loop = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
         }
 
         private static void MenuProductCategorySupplier()
@@ -239,7 +348,7 @@ namespace TheWebShop
                 case 'J':
                 case 'j':
                     Create(new City(), dbContext, countryId);
-                        break;
+                    break;
                 default:
                     Console.WriteLine("Du valde att inte lägga till en stad");
                     break;
@@ -265,7 +374,7 @@ namespace TheWebShop
             while (!int.TryParse(input, out id))
             {
                 Console.WriteLine("Felaktig inmatning, försök igen");
-                input = Console.ReadLine(); 
+                input = Console.ReadLine();
             }
             return id;
         }
