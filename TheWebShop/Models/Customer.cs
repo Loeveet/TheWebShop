@@ -322,22 +322,49 @@ namespace TheWebShop.Models
                 // Spara lokalt för att slippa skapa order o orderdetails osv
                 Order order = new Order
                 {
+                    // TODO: customer.Id funkar ej om man är gäst
                     CustomerId = customer.Id,
                     FreightId = freightMethodId,
                     PaymentMethodId = paymentMethodId,
                     OrderDate = DateTime.Now
                 };
-                dbContext.Orders.Add(order);
+                //dbContext.Orders.Add(order);
 
-                var result = dbContext.OrderDetails
-                            .Where(x => x.OrderId == order.Id)
-                            .Include(x => x.Product)
-                            .ToList();
+                List<OrderProduct> orderProducts = new();
+                var cartResult = new List<Cart>();
+                if (customer.FirstName != "Gäst")
+                {
+                    cartResult = dbContext.Carts
+                    .Where(x => x.CustomerId == customer.Id)
+                    .Include(x => x.Product)
+                    .ToList();
+                }
 
-                var result2 = result
+                foreach (var x in cartResult)
+                {
+                    orderProducts.Add(new OrderProduct
+                    {
+                        //OrderId = order.Id,
+                        ProductId = x.ProductId,
+                        UnitPrice = x.Product.Price
+
+                    });
+                    //dbContext.OrderDetails.Add(orderProduct);
+                }
+                var test = cartResult
                     .GroupBy(x => x.Product);
 
-                foreach (var op in result2)
+
+
+                //var result = dbContext.OrderDetails
+                //            .Where(x => x.OrderId == order.Id)
+                //            .Include(x => x.Product)
+                //            .ToList();
+
+                //var result2 = result
+                //    .GroupBy(x => x.Product);                
+
+                foreach (var op in test)
                 {
                     totalCost += op.Key.Price * op.Count();
                     Console.WriteLine($"{op.Key.Name} à {op.Key.Price} kronor, antal: {op.Count()} st. Totalpris: {op.Key.Price * op.Count()} kronor");
@@ -353,7 +380,7 @@ namespace TheWebShop.Models
                 Console.WriteLine("Tryck [0] för att backa");
                 var choice = Console.ReadKey(true).KeyChar;
                 switch (choice)
-                {                   
+                {
                     case '1':
                         //Order order = new Order
                         //{
@@ -362,29 +389,41 @@ namespace TheWebShop.Models
                         //    PaymentMethodId = paymentMethodId,
                         //    OrderDate = DateTime.Now
                         //};
-                        //dbContext.Orders.Add(order);
+                        dbContext.Orders.Add(order);
                         dbContext.SaveChanges();
-                        foreach (var x in dbContext.Carts.Include(x => x.Product).Where(x => x.CustomerId == customer.Id))
-                        {
-                            OrderProduct orderProduct = new OrderProduct
-                            {
-                                OrderId = order.Id,
-                                ProductId = x.ProductId,
-                                UnitPrice = x.Product.Price
+                        //foreach (var x in dbContext.Carts.Include(x => x.Product).Where(x => x.CustomerId == customer.Id))
+                        //{
+                        //    OrderProduct orderProduct = new OrderProduct
+                        //    {
+                        //        OrderId = order.Id,
+                        //        ProductId = x.ProductId,
+                        //        UnitPrice = x.Product.Price
 
-                            };
-                            dbContext.OrderDetails.Add(orderProduct);
+                        //    };
+                        //}
+                        var orderId2 = dbContext.Orders
+                            .Where(x => x.CustomerId == customer.Id && x.OrderDate == order.OrderDate)
+                            .Select(x => x.Id)
+                            .FirstOrDefault();
+                        foreach (var x in orderProducts)
+                        {
+                            x.OrderId = orderId2;
+                            dbContext.OrderDetails.Add(x);
                         }
                         dbContext.SaveChanges();
 
-                        
+
 
                         foreach (var x in dbContext.Carts.Where(x => x.CustomerId == customer.Id))
                         {
                             dbContext.Carts.Remove(x);
                         }
                         dbContext.SaveChanges();
-
+                        // TODO: Här är jag
+                        foreach (var product in dbContext.OrderDetails.Include(x => x.Product).Where(x => x.Id == order.Id).Include(x => x.))
+                        {
+                            Console.WriteLine($"{product.} ");
+                        }
                         Console.ReadKey();
                         loop = false;
 
@@ -392,9 +431,9 @@ namespace TheWebShop.Models
                     case '2':
                         break;
                     case '0':
-                        loop = false;                      
-                        break;                
-                }               
+                        loop = false;
+                        break;
+                }
             }
         }
         private static void ChangeQuantity(List<Cart> products)
