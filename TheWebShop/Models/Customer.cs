@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +28,6 @@ namespace TheWebShop.Models
         public string CreditCard { get; set; }
 
         public virtual City City { get; set; }
-        //public virtual Cart Cart { get; set; }
         public virtual ICollection<Order>? Orders { get; set; }
         public virtual ICollection<Cart> Carts { get; set; }
 
@@ -248,43 +249,50 @@ namespace TheWebShop.Models
 
         private static void ShoppingCart(Customer customer, TheWebShopContext dbContext)
         {
-            Console.Clear();
-
-            Cart.PrintCart(customer);
-
-            Console.WriteLine();
-            Console.WriteLine("[1] Ändra antal");
-            Console.WriteLine("[2] Ta bort produkten");
-            Console.WriteLine("[3] Gå till kassan");
-            Console.WriteLine("[0] Backa");
-
-            var choice = Console.ReadKey(true).KeyChar;
-            switch (choice)
+            var loop = true;
+            while (loop)
             {
-                case '1':
-                    Console.WriteLine("Välj Id på den produkten du vill ändra antal på");
-                    var id = Managing.TryToParseInput();
+                Console.Clear();
 
-                    var products = customer.Carts
-                        .Where(x => x.ProductId == id)
-                        .ToList();
-                    if (products != null)
-                    {
-                        ChangeQuantity(products);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Vald produkt ingår ej bland de utvalda. Tryck valfri tangent för att fortsätta");
-                    }
-                    Console.ReadKey(true);
-                    break;
-                case '2':
-                    break;
-                case '3':
-                    GoToCheckout(customer, dbContext);
-                    break;
-                default:
-                    break;
+                var test = GetShoppingCart(customer, dbContext);
+                Console.WriteLine();
+                Console.WriteLine("[1] Ändra antal");
+                Console.WriteLine("[2] Ta bort produkten");
+                Console.WriteLine("[3] Gå till kassan");
+                Console.WriteLine("[0] Backa");
+                Console.WriteLine();
+                var choice = Console.ReadKey(true).KeyChar;
+                switch (choice)
+                {
+                    case '1':
+
+                        Console.WriteLine("Välj Id på den produkten du vill ändra antal på");
+                        var id = Managing.TryToParseInput();
+
+                        var products = dbContext.Carts
+                            .Include(x => x.Product)
+                            .Where(x => x.ProductId == id && x.CustomerId == customer.Id)
+                            .ToList();
+
+                        if (products.Any())
+                        {
+                            ChangeQuantity(customer, dbContext, id); //TODO håller på!
+                        }
+                        else
+                        {
+                            Console.WriteLine("Vald produkt ingår ej bland de utvalda. Tryck valfri tangent för att fortsätta");
+                        }
+                        Console.ReadKey(true);
+                        break;
+                    case '2':
+                        break;
+                    case '3':
+                        GoToCheckout(customer, dbContext, test);
+                        break;
+                    case '0':
+                        loop = false;
+                        break;
+                }
             }
         }
 
@@ -303,7 +311,7 @@ namespace TheWebShop.Models
             Console.WriteLine($"Totalpris: {totalCost} kr");
         }
 
-        private static void GoToCheckout(Customer customer, TheWebShopContext dbContext)
+        private static void GoToCheckout(Customer customer, TheWebShopContext dbContext, IEnumerable<IGrouping<Product, Cart>> test)
         {
             double totalCost = 0;
 
@@ -345,13 +353,7 @@ namespace TheWebShop.Models
 
                 List<OrderProduct> orderProducts = new();
                 var cartResult = new List<Cart>();
-                if (customer.FirstName != "Gäst")
-                {
-                    cartResult = dbContext.Carts
-                    .Where(x => x.CustomerId == customer.Id)
-                    .Include(x => x.Product)
-                    .ToList();
-                }
+
 
                 foreach (var x in cartResult)
                 {
@@ -362,13 +364,11 @@ namespace TheWebShop.Models
 
                     });
                 }
-                var test = cartResult
-                    .GroupBy(x => x.Product);
 
                 PrintReceipt(dbContext, freightMethodId, test);
 
                 var freightCost = dbContext.Freights.Where(x => x.Id == freightMethodId).FirstOrDefault();
- 
+
                 Console.WriteLine();
                 Console.WriteLine("Tryck [1] för att slutföra köpet");
                 Console.WriteLine("Tryck [2] börja om utcheckningen");
@@ -385,6 +385,7 @@ namespace TheWebShop.Models
                             .Where(x => x.CustomerId == customer.Id && x.OrderDate == order.OrderDate)
                             .Select(x => x.Id)
                             .FirstOrDefault();
+
                         foreach (var x in orderProducts)
                         {
                             x.OrderId = orderId2;
@@ -406,7 +407,7 @@ namespace TheWebShop.Models
                         Console.WriteLine("-----------------------------------------------------");
                         Console.WriteLine();
                         Console.WriteLine("Tack för din beställning!");
-                        Console.WriteLine("Tryck valfri tangent för att gå tillbaka till menyn");                     
+                        Console.WriteLine("Tryck valfri tangent för att gå tillbaka till menyn");
 
                         Console.ReadKey();
                         loop = false;
@@ -420,13 +421,88 @@ namespace TheWebShop.Models
                 }
             }
         }
-        private static void ChangeQuantity(List<Cart> products)
-        {
-            foreach (var product in products)
-            {
 
-                Console.WriteLine(product.Product.Name);
+        private static IEnumerable<IGrouping<Product, Cart>> GetShoppingCart(Customer customer, TheWebShopContext dbContext)
+        {
+            double totalCost = 0;
+            var result = new List<Cart>();
+            if (customer.FirstName != "Gäst")
+            {
+                result = dbContext.Carts
+                .Where(x => x.CustomerId == customer.Id)
+                .Include(x => x.Product)
+                .ToList();
             }
+            else
+            {
+                result = customer.Carts.ToList();
+            }
+            var myCart = result
+                .GroupBy(x => x.Product);
+
+            Console.WriteLine(customer.FirstName);
+            Console.WriteLine("-----------------------------------------------------");
+            foreach (var c in myCart)
+            {
+                totalCost += c.Key.Price * c.Count();
+                Console.WriteLine($"[{c.Key.Id}] - {c.Key.Name} à {c.Key.Price} kr - {c.Count()} st - Totalt per produkt {c.Key.Price * c.Count()} kr");
+            }
+            Console.WriteLine("-----------------------------------------------------");
+            Console.WriteLine($"Totalt {totalCost} kr");
+            return myCart;
+        }
+
+        private static void ChangeQuantity(Customer customer, TheWebShopContext dbContext, int productId)
+        {
+            var loop = true;
+            while (loop)
+            {
+                Console.Clear();
+                var customerProduct = dbContext.Carts
+                            .Where(x => x.CustomerId == customer.Id && x.ProductId == productId)
+                            .Include(x => x.Product)
+                            .ToList();
+
+                foreach (var product in customerProduct.Distinct())
+                {
+                    Console.WriteLine(product.Product.Name + " - " + customerProduct.Count());
+                    break;
+                }
+                
+
+                Console.WriteLine();
+                Console.WriteLine("Lägg till produkter med uppåtpil");
+                Console.WriteLine("Ta bort produkter med nedåtpil");
+                Console.WriteLine("[0] Backa");
+
+
+                ConsoleKeyInfo key = Console.ReadKey();
+                if (customerProduct.Any())
+                {
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.UpArrow:
+                            dbContext.Carts.Add(new Cart { ProductId = customerProduct[0].ProductId, CustomerId = customer.Id });
+                            customerProduct[0].Product.Quantity--;
+                            dbContext.SaveChanges();
+
+                            break;
+                        case ConsoleKey.DownArrow:
+                            dbContext.Carts.Remove(customerProduct[0]);
+                            customerProduct[0].Product.Quantity++;
+                            dbContext.SaveChanges();
+                            break;
+                        case ConsoleKey.D0:
+                            loop = false;
+                            break;
+                    }
+                }
+                else if (key.Key == ConsoleKey.D0)
+                {
+                    loop = false;
+                }
+            }
+
         }
 
         private static List<Product> Randomize(List<Product> products)
