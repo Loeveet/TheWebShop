@@ -84,7 +84,7 @@ namespace TheWebShop
                                 Cart.PrintCart(customer);
                                 int productId = TryToParseInput();
                                 //int productId = -1;
-                                
+
                                 var product = dbContext.Products
                                     .Where(x => x.Id == productId && x.Category.Id == categoryId)
                                     .FirstOrDefault();

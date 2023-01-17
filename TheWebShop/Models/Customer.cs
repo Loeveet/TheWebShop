@@ -265,7 +265,6 @@ namespace TheWebShop.Models
                 switch (choice)
                 {
                     case '1':
-
                         Console.WriteLine("Välj Id på den produkten du vill ändra antal på");
                         var id = Managing.TryToParseInput();
 
@@ -276,7 +275,7 @@ namespace TheWebShop.Models
 
                         if (products.Any())
                         {
-                            ChangeQuantity(customer, dbContext, id); //TODO håller på!
+                            ChangeQuantity(customer, dbContext, id);
                         }
                         else
                         {
@@ -285,6 +284,30 @@ namespace TheWebShop.Models
                         Console.ReadKey(true);
                         break;
                     case '2':
+
+                        Console.WriteLine("Välj Id på den produkten du vill ta bort");
+                        var id2 = Managing.TryToParseInput();
+
+                        var products2 = dbContext.Carts
+                            .Include(x => x.Product)
+                            .Where(x => x.ProductId == id2 && x.CustomerId == customer.Id)
+                            .ToList();
+
+                        if (products2.Any())
+                        {
+                            for (int i = 0; i < products2.Count; i++)
+                            {
+                                dbContext.Remove(products2[i]);
+                                products2[0].Product.Quantity++;
+
+                            }
+                            dbContext.SaveChanges();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Vald produkt ingår ej bland de utvalda. Tryck valfri tangent för att fortsätta");
+                            Console.ReadKey(true);
+                        }
                         break;
                     case '3':
                         GoToCheckout(customer, dbContext, test);
@@ -465,15 +488,17 @@ namespace TheWebShop.Models
 
                 foreach (var product in customerProduct.Distinct())
                 {
-                    Console.WriteLine(product.Product.Name + " - " + customerProduct.Count());
+                    Console.WriteLine(product.Product.Name + " - " + customerProduct.Count + " st");
+                    Console.WriteLine($"Aktuellt lagersaldo på {product.Product.Name} - {product.Product.Quantity} st");
                     break;
                 }
-                
+
 
                 Console.WriteLine();
                 Console.WriteLine("Lägg till produkter med uppåtpil");
                 Console.WriteLine("Ta bort produkter med nedåtpil");
                 Console.WriteLine("[0] Backa");
+                Console.WriteLine();
 
 
                 ConsoleKeyInfo key = Console.ReadKey();
@@ -482,10 +507,17 @@ namespace TheWebShop.Models
                     switch (key.Key)
                     {
                         case ConsoleKey.UpArrow:
-                            dbContext.Carts.Add(new Cart { ProductId = customerProduct[0].ProductId, CustomerId = customer.Id });
-                            customerProduct[0].Product.Quantity--;
-                            dbContext.SaveChanges();
-
+                            if (customerProduct[0].Product.Quantity > 0)
+                            {
+                                dbContext.Carts.Add(new Cart { ProductId = customerProduct[0].ProductId, CustomerId = customer.Id });
+                                customerProduct[0].Product.Quantity--;
+                                dbContext.SaveChanges();
+                            }
+                            else
+                            {
+                                Console.WriteLine("Slut på lagret, tryck valfri tangent för att forsätta.");
+                                Console.ReadKey(true);
+                            }
                             break;
                         case ConsoleKey.DownArrow:
                             dbContext.Carts.Remove(customerProduct[0]);
@@ -499,6 +531,12 @@ namespace TheWebShop.Models
                 }
                 else if (key.Key == ConsoleKey.D0)
                 {
+                    loop = false;
+                }
+                else
+                {
+                    Console.WriteLine("Vald produkt finns inte längre i varukorgen, tryck på valfri tangent för att backa");
+                    Console.ReadKey(true);
                     loop = false;
                 }
             }

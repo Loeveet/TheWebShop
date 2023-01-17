@@ -257,9 +257,9 @@ namespace TheWebShop.Models
                     Cart.PrintCart(customer);
                     Console.WriteLine(product.Quantity + " finns i lager");
                     Console.WriteLine();
-                    Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
+                    Console.WriteLine($"[{product.Id}]\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
                     Console.WriteLine("Skriv antalet av denna produkt du vill köpa eller 0 för att backa i menyn");
-                    var customerAnswer = Convert.ToInt32(Console.ReadLine());
+                    var customerAnswer = Managing.TryToParseInput();
                     if (customerAnswer != 0 && customerAnswer <= product.Quantity)
                     {
                         //customer.Carts = new List<Cart>();
@@ -304,14 +304,9 @@ namespace TheWebShop.Models
             {
                 Console.Clear();
                 Console.WriteLine("Fritextsökning för produkter");
-                Console.WriteLine("Tryck [0] för att backa");
                 Cart.PrintCart(customer);
 
                 var input = Console.ReadLine();
-                if (input is "0")
-                {
-                    searchLoop = false;
-                }
 
                 using var dbContext = new TheWebShopContext();
                 var show = dbContext.Products
