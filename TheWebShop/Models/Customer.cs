@@ -288,9 +288,25 @@ namespace TheWebShop.Models
             }
         }
 
+        private static void PrintReceipt(TheWebShopContext dbContext, int freightMethodId, IEnumerable<IGrouping<Product, Cart>> test)
+        {
+            double totalCost = 0;
+
+            foreach (var op in test)
+            {
+                totalCost += op.Key.Price * op.Count();
+                Console.WriteLine($"{op.Key.Name} à {op.Key.Price} kr, antal: {op.Count()} st. Pris: {op.Key.Price * op.Count()} kr");
+            }
+            var freightCost = dbContext.Freights.Where(x => x.Id == freightMethodId).FirstOrDefault();
+            totalCost += freightCost.Price;
+            Console.WriteLine($"+ leverans: {freightCost.Price} kr");
+            Console.WriteLine($"Totalpris: {totalCost} kr");
+        }
+
         private static void GoToCheckout(Customer customer, TheWebShopContext dbContext)
         {
             double totalCost = 0;
+
             var loop = true;
             while (loop)
             {
@@ -312,14 +328,12 @@ namespace TheWebShop.Models
                     Console.WriteLine($"[{f.Id}] - {f.Name}");
                 }
                 int id2 = Managing.TryToParseInput();
+                Console.WriteLine();
                 var paymentMethodId = dbContext.PaymentMethods
                     .Where(x => x.Id == id2)
                     .Select(x => x.Id)
                     .FirstOrDefault();
 
-
-                //TODO här slutade vi och den visar inte hela ordern. Visar bara shipping total kostnaden. Kom på hur vi ska köra med sparningen.
-                // Spara lokalt för att slippa skapa order o orderdetails osv
                 Order order = new Order
                 {
                     // TODO: customer.Id funkar ej om man är gäst
@@ -328,7 +342,6 @@ namespace TheWebShop.Models
                     PaymentMethodId = paymentMethodId,
                     OrderDate = DateTime.Now
                 };
-                //dbContext.Orders.Add(order);
 
                 List<OrderProduct> orderProducts = new();
                 var cartResult = new List<Cart>();
@@ -344,37 +357,19 @@ namespace TheWebShop.Models
                 {
                     orderProducts.Add(new OrderProduct
                     {
-                        //OrderId = order.Id,
                         ProductId = x.ProductId,
                         UnitPrice = x.Product.Price
 
                     });
-                    //dbContext.OrderDetails.Add(orderProduct);
                 }
                 var test = cartResult
                     .GroupBy(x => x.Product);
 
+                PrintReceipt(dbContext, freightMethodId, test);
 
-
-                //var result = dbContext.OrderDetails
-                //            .Where(x => x.OrderId == order.Id)
-                //            .Include(x => x.Product)
-                //            .ToList();
-
-                //var result2 = result
-                //    .GroupBy(x => x.Product);                
-
-                foreach (var op in test)
-                {
-                    totalCost += op.Key.Price * op.Count();
-                    Console.WriteLine($"{op.Key.Name} à {op.Key.Price} kronor, antal: {op.Count()} st. Totalpris: {op.Key.Price * op.Count()} kronor");
-                }
                 var freightCost = dbContext.Freights.Where(x => x.Id == freightMethodId).FirstOrDefault();
-                totalCost += freightCost.Price;
-                Console.WriteLine($"+ leverans: {freightCost.Price} kronor");
-                //Console.WriteLine($"+ betalning: {dbContext.PaymentMethods.Where(x => x.Id == paymentMethodId).Select(x => x.)}");
-                Console.WriteLine($"Totalpris: {totalCost} kronor");
-
+ 
+                Console.WriteLine();
                 Console.WriteLine("Tryck [1] för att slutföra köpet");
                 Console.WriteLine("Tryck [2] börja om utcheckningen");
                 Console.WriteLine("Tryck [0] för att backa");
@@ -382,25 +377,10 @@ namespace TheWebShop.Models
                 switch (choice)
                 {
                     case '1':
-                        //Order order = new Order
-                        //{
-                        //    CustomerId = customer.Id,
-                        //    FreightId = freightMethodId,
-                        //    PaymentMethodId = paymentMethodId,
-                        //    OrderDate = DateTime.Now
-                        //};
+
                         dbContext.Orders.Add(order);
                         dbContext.SaveChanges();
-                        //foreach (var x in dbContext.Carts.Include(x => x.Product).Where(x => x.CustomerId == customer.Id))
-                        //{
-                        //    OrderProduct orderProduct = new OrderProduct
-                        //    {
-                        //        OrderId = order.Id,
-                        //        ProductId = x.ProductId,
-                        //        UnitPrice = x.Product.Price
 
-                        //    };
-                        //}
                         var orderId2 = dbContext.Orders
                             .Where(x => x.CustomerId == customer.Id && x.OrderDate == order.OrderDate)
                             .Select(x => x.Id)
@@ -412,19 +392,22 @@ namespace TheWebShop.Models
                         }
                         dbContext.SaveChanges();
 
-
-
                         foreach (var x in dbContext.Carts.Where(x => x.CustomerId == customer.Id))
                         {
                             dbContext.Carts.Remove(x);
                         }
                         dbContext.SaveChanges();
-                        // TODO: Här är jag
-                        var testListOfProducts = dbContext.OrderDetails.Include(x => x.Product).Include(x => x.Product).Where(x => x.OrderId == order.Id).GroupBy(x => x.Product);
-                        foreach (var product in )
-                        {
-                            Console.WriteLine($"{product.Product.Name} - {product.}");
-                        }
+
+                        Console.Clear();
+
+                        Console.WriteLine("Här är ditt kvitto!");
+                        Console.WriteLine("-----------------------------------------------------");
+                        PrintReceipt(dbContext, freightMethodId, test);
+                        Console.WriteLine("-----------------------------------------------------");
+                        Console.WriteLine();
+                        Console.WriteLine("Tack för din beställning!");
+                        Console.WriteLine("Tryck valfri tangent för att gå tillbaka till menyn");                     
+
                         Console.ReadKey();
                         loop = false;
 
@@ -441,6 +424,7 @@ namespace TheWebShop.Models
         {
             foreach (var product in products)
             {
+
                 Console.WriteLine(product.Product.Name);
             }
         }
