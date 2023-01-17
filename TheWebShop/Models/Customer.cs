@@ -420,9 +420,10 @@ namespace TheWebShop.Models
                         }
                         dbContext.SaveChanges();
                         // TODO: Här är jag
-                        foreach (var product in dbContext.OrderDetails.Include(x => x.Product).Where(x => x.Id == order.Id).Include(x => x.))
+                        var testListOfProducts = dbContext.OrderDetails.Include(x => x.Product).Include(x => x.Product).Where(x => x.OrderId == order.Id).GroupBy(x => x.Product);
+                        foreach (var product in )
                         {
-                            Console.WriteLine($"{product.} ");
+                            Console.WriteLine($"{product.Product.Name} - {product.}");
                         }
                         Console.ReadKey();
                         loop = false;
