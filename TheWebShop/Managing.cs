@@ -172,15 +172,72 @@ namespace TheWebShop
             while (loop)
             {
                 Console.Clear();
+                Console.WriteLine("[1] Visa alla registrerade kunder");
+                Console.WriteLine("[2] Sök efter en kund");
+                Console.WriteLine("[0] För att backa");
+                var input = Console.ReadKey(true).KeyChar;
+                switch (input)
+                {
+                    case '1':
+                        Console.WriteLine($"Id Namn\t\tMail");
+                        foreach (var customer1 in dbContext.Customers)
+                        {
+                            Console.WriteLine($"[{customer1.Id}] {customer1.FirstName + ' ' + customer1.LastName}\t{customer1.Email}");
+                        }
+                        Console.WriteLine();
+                        break;
+                    case '2':
+                        Console.Clear();
+                        Console.WriteLine("Fritextsökning för kunder");
+
+                        var input2 = Console.ReadLine();
+                        var show = dbContext.Customers
+                        .Include(x => x.City)
+                        .Where(x => x.FirstName.Contains(input2) || x.LastName.Contains(input2) || x.Email.Contains(input2) || x.City.Name.Contains(input2) || x.City.Country.Name.Contains(input2));
+
+                        Console.WriteLine();
+                        if (show.Any())
+                        {
+                            foreach (var customer1 in show)
+                            {
+                                Console.WriteLine($"[{customer1.Id}] {customer1.FirstName + ' ' + customer1.LastName}\t{customer1.Email}");
+                            }
+                            Console.WriteLine();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Sökningen gav ingen träff. Tryck valfri tangent för att fortsätta");
+                            Console.ReadKey(true);
+                        }
+                        break;
+                    case '0':
+                        loop = false;
+                        break;
+                }
+                var customer = new Customer();
+                Console.WriteLine("Ange Id på kunden du vill administrera eller [0] för att backa");
+                var inputId = TryToParseInput();
+
+                if (inputId is 0)
+                {
+                    loop = false;
+                    break;
+                }
+                else if (dbContext.Customers.Any(x => x.Id == inputId))
+                {
+                    customer = dbContext.Customers
+                        .Include(x => x.City)
+                        .Where(x => x.Id == inputId)
+                        .FirstOrDefault();
+                }
+                else
+                {
+                    Console.WriteLine("Fanns ingen kund på valt id. Tryck valfri tangent för att fortsätta");
+                    Console.ReadKey(true);
+                }
 
                 //Det kan bli tokigt ifall man skulle ha extremt många kunder registrerade. 
                 //Reflektera över annan potentiel lösning på redovinsning med Micke
-
-                Console.WriteLine($"Id Namn\t\tMail");
-                foreach (var customer in dbContext.Customers)
-                {
-                    Console.WriteLine($"[{customer.Id}] {customer.FirstName + ' ' + customer.LastName}\t{customer.Email}");
-                }
 
                 Console.WriteLine();
                 Console.WriteLine("[1] Ändra kunduppgifter");
@@ -189,68 +246,105 @@ namespace TheWebShop
 
                 var choice = Console.ReadKey(true).KeyChar;
                 switch (choice)
-                {                      
+                {
                     case '1':
-                        Console.WriteLine("Ange id på den kunden du vill ändra uppgifterna på");
-
-                        int id3 = Managing.TryToParseInput();
-
-                        var product3 = dbContext.Products.Where(x => x.Id == id3).FirstOrDefault();
-                        if (product3 is not null)
+                        if (customer is not null)
                         {
-                            Console.WriteLine($"Ange vad du vill ändra på");
-                            Console.WriteLine("[N]amn");
-                            Console.WriteLine("[P]ris");
-                            Console.WriteLine("[B]eskrivning");
-                            Console.WriteLine("[L]agersaldo");
-                            Console.WriteLine("[U]tvald");
+                            var customLoop = true;
 
-                            var answer2 = Console.ReadKey(true).KeyChar;
-                            switch (answer2)
+                            var customerCountry = dbContext.Cities
+                                .Include(x => x.Country)
+                                .Where(x => x.Id == customer.City.Id)
+                                .FirstOrDefault();
+                            while (customLoop)
                             {
-                                case 'N':
-                                case 'n':
-                                    Console.Write("Ange nytt namn: ");
-                                    product3.Name = Console.ReadLine();
-                                    dbContext.SaveChanges();
-                                    break;
-                                case 'P':
-                                case 'p':
-                                    Console.WriteLine("Nuvarande pris: " + product3.Price);
-                                    Console.Write("Ange nytt pris: ");
-                                    product3.Price = Convert.ToInt32(Console.ReadLine());
-                                    dbContext.SaveChanges();
-                                    break;
-                                case 'B':
-                                case 'b':
-                                    Console.WriteLine("Nuvarande beskrivning: " + product3.DetailedInfo);
-                                    Console.Write("Ange ny beskrivning: ");
-                                    product3.DetailedInfo = Console.ReadLine();
-                                    dbContext.SaveChanges();
-                                    break;
-                                case 'L':
-                                case 'l':
-                                    Console.WriteLine("Nuvarande lagersaldo: " + product3.Quantity);
-                                    Console.Write("Ange nytt lagersaldo: ");
-                                    product3.Quantity = Convert.ToInt32(Console.ReadLine());
-                                    dbContext.SaveChanges();
-                                    break;
-                                case 'U':
-                                case 'u':
-                                    Console.Write(product3.Name + " är ");
-                                    Console.WriteLine(product3.ChosenProduct == true ? "utvald produkt" : "ej utvald produkt");
-                                    Console.Write("Vill du ändra utvald produkt?: ");
-                                    var chosenProduct1 = Console.ReadLine().ToLower();
-                                    if (chosenProduct1 == "ja")
-                                    {
-                                        product3.ChosenProduct = !product3.ChosenProduct;
-                                        dbContext.SaveChanges();
-                                    }
-                                    break;
-                                default:
-                                    Console.WriteLine("Du valde att inte ändra info om produkten. Tryck valfri tangent");
-                                    Console.ReadKey(true);
-                                    break;
+                                Console.Clear();
+                                Console.WriteLine($"Ange vad du vill ändra på hos {customer.FirstName} {customer.LastName}");
+                                Console.WriteLine($"[1] Förnamn - {customer.FirstName}");
+                                Console.WriteLine($"[2] Efternamn - {customer.LastName}");
+                                Console.WriteLine($"[3] Gata - {customer.Street}");
+                                Console.WriteLine($"[4] Postnummer - {customer.ZipCode}");
+                                Console.WriteLine($"[5] Stad och land - {customer.City.Name}, {customerCountry.Country.Name}");
+                                Console.WriteLine($"[6] Mail - {customer.Email}");
+                                Console.WriteLine($"[7] Telefon - {customer.PhoneNumber}");
+                                Console.WriteLine($"[8] Kreditkortsnummer - {customer.CreditCard}");
+                                Console.WriteLine("[0] Backa");
+
+
+                                var answer2 = Console.ReadKey(true).KeyChar;
+                                switch (answer2)
+                                {
+                                    case '1':
+                                        Console.Write("Ange nytt förnamn: ");
+                                        customer.FirstName = Console.ReadLine();
+                                        break;
+                                    case '2':
+                                        Console.Write("Ange nytt efternamn: ");
+                                        customer.LastName = Console.ReadLine();
+                                        break;
+                                    case '3':
+                                        Console.Write("Ange en ny gata: ");
+                                        customer.Street = Console.ReadLine();
+                                        break;
+                                    case '4':
+                                        Console.Write("Ange ett nytt postnummer: ");
+                                        customer.ZipCode = TryToParseInput();
+                                        break;
+                                    case '5':
+                                        //STAD
+
+                                        Console.WriteLine("Registrerade länder");
+                                        foreach (var c in dbContext.Countries)
+                                        {
+                                            Console.WriteLine($"[{c.Id}] - {c.Name}");
+                                        }
+                                        Console.Write("Välj [Id] eller skriv \"ny\": ");
+                                        var country = Console.ReadLine();
+                                        int id;
+                                        if (!int.TryParse(country, out id))
+                                        {
+                                            id = Create(new Country(), dbContext);
+                                        }
+
+                                        Console.WriteLine("Registrerade städer i valt land");
+                                        foreach (var city in dbContext.Cities
+                                            .Where(x => x.CountryId == id))
+                                        {
+                                            Console.WriteLine($"[{city.Id}] - {city.Name}");
+
+                                        }
+                                        Console.Write("Välj [Id] eller skriv \"ny\": ");
+                                        var cityId = Console.ReadLine();
+                                        int cId;
+                                        if (!int.TryParse(cityId, out cId))
+                                        {
+                                            cityId = Create(new City(), dbContext, id);
+                                            customer.CityId = Convert.ToInt32(cityId);
+                                        }
+                                        else
+                                        {
+                                            customer.CityId = cId;
+                                        }
+
+                                        break;
+
+                                    case '6':
+                                        Console.Write("Ange en ny mailadress: ");
+                                        customer.Email = Console.ReadLine();
+                                        break;
+                                    case '7':
+                                        Console.Write("Ange ett nytt telefonnummer: ");
+                                        customer.PhoneNumber = Console.ReadLine();
+                                        break;
+                                    case '8':
+                                        Console.Write("Ange ett nytt kreditkortsnummer: ");
+                                        customer.CreditCard = Console.ReadLine();
+                                        break;
+                                    case '0':
+                                        customLoop = false;
+                                        break;
+                                }
+                                dbContext.SaveChanges();
                             }
                         }
                         else
