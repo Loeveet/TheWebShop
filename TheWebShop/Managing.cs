@@ -163,7 +163,7 @@ namespace TheWebShop
         }
 
 
-        //TODO HÄR ÄR VI, Hantera kunder som admin. Uppdatera, Beställningshistorik. Redigera koden nedan. 
+        //TODO Hantera kunder som admin, Beställningshistorik.
         private static void HandlingCustomers()
         {
             using var dbContext = new TheWebShopContext();
@@ -291,8 +291,6 @@ namespace TheWebShop
                                         customer.ZipCode = TryToParseInput();
                                         break;
                                     case '5':
-                                        //STAD
-
                                         Console.WriteLine("Registrerade länder");
                                         foreach (var c in dbContext.Countries)
                                         {
@@ -325,7 +323,6 @@ namespace TheWebShop
                                         {
                                             customer.CityId = cId;
                                         }
-
                                         break;
 
                                     case '6':
@@ -349,11 +346,71 @@ namespace TheWebShop
                         }
                         else
                         {
-                            Console.WriteLine("Produkten fanns ej. Tryck valfri tangent");
+                            Console.WriteLine("Kunden fanns ej. Tryck valfri tangent");
                             Console.ReadKey(true);
                         }
                         break;
                     case '2':
+                        if (customer is not null)
+                        {
+                            var orders = dbContext.Orders
+                                .Include(x => x.Customer)
+                                .Include(x => x.OrderProducts)
+                                .Include(x => x.Freight)
+                                .Include(x => x.PaymentMethod)
+                                .Where(x => x.CustomerId == customer.Id)
+                                .ToList();
+                            var loop4 = true;
+                            while (loop4)
+                            {
+                                Console.Clear();
+
+                                foreach (var order in orders)
+                                {
+                                    Console.WriteLine($"Order: {order.Id}");
+                                    //foreach (var item in order)
+                                    //{
+                                    //    Console.WriteLine($"\t{item.Customer.FirstName} {item.Customer.LastName} - {item.OrderDate} - {item.PaymentMethod.Name} - {item.Freight.Name} - {item.OrderProducts.Count} st");
+
+                                    //    var test = dbContext.OrderDetails
+                                    //        .Where(x => x.ProductId == x.Order.OrderProducts.Distinct());
+                                    //    item.OrderProducts.ToList();
+                                    //    foreach (var product in item.OrderProducts.GroupBy(x => x.Product.Name))
+                                    //    {
+                                    //        product.Count
+                                    //        foreach (var xItem in product)
+                                    //        {
+                                    //            Console.WriteLine($"\t\t{test.Name} - Id: {xItem.ProductId} - {xItem.UnitPrice} kr");
+
+                                    //        }
+                                    //    }
+                                    //}
+                                }
+                                Console.WriteLine("Ange [id] på order du vill gå in på eller [0] för att backa");
+                                var orderId = TryToParseInput();
+                                if (orderId is 0)
+                                {
+                                    loop4 = false;
+                                    break;
+                                }
+                                else if (orders.Where(x => x.Id == orderId).Any())
+                                {
+                                    // TODO: Här är vi
+                                    var orderHistories = OrderHistory.GetOrderHistories(orderId, customer.Id);
+                                    Console.WriteLine($"{customer.FirstName} {customer.LastName}");
+                                    foreach (var item in orderHistories)
+                                    {
+                                        Console.WriteLine($"\t{item.OrderDate} - {item.ProductName} - {item.Quantity} st - {item.UnitPrice} kr/st - Totalt: {item.TotalPrice} kr");
+                                        
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Kunden fanns ej. Tryck valfri tangent");
+                            Console.ReadKey(true);
+                        }
                         break;
                     case '0':
                         loop = false;
