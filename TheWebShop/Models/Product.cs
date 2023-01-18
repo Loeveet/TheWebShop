@@ -33,10 +33,11 @@ namespace TheWebShop.Models
             {
                 Console.Clear();
 
-                Console.WriteLine($"Id Utvald\tNamn");
-                foreach (var product in dbContext.Products)
+                Console.WriteLine($"Id\tUtvald\tNamn\t\tKategori");
+                Console.WriteLine("-----------------------------------------");
+                foreach (var product in dbContext.Products.Include(x => x.Category))
                 {
-                    Console.WriteLine($"{product.Id} {product.ChosenProduct}\t\t{product.Name}");
+                    Console.WriteLine($"[{product.Id}]\t{(product.ChosenProduct ? "Ja" : "Nej")}\t{product.Name}\t{product.Category.Name}");
                 }
 
                 Console.WriteLine();
@@ -317,43 +318,57 @@ namespace TheWebShop.Models
                 Console.WriteLine();
                 if (show.Any())
                 {
-                    foreach (var p in show)
+                    var loop = true;
+                    while (loop)
                     {
-                        Console.WriteLine($"[{p.Id}] {p.Name} - {p.Price} - {p.DetailedInfo}");
-                    }
-                    Console.WriteLine();
-
-                    Console.WriteLine("Ange Id för att läsa mer om produkten eller [0] för att backa");
-                    var inputId = Console.ReadLine();
-                    if (int.TryParse(inputId, out int id))
-                    {
-                        if (id is 0)
+                        Console.Clear();
+                        Cart.PrintCart(customer);
+                        Console.WriteLine("Din sökning gav följande träffar");
+                        Console.WriteLine("----------------------------------");
+                        foreach (var p in show)
                         {
-                            searchLoop = false;
-                            break;
+                            Console.WriteLine($"[{p.Id}] {p.Name} - {p.Price} kr - {p.DetailedInfo}");
                         }
-                        else if (dbContext.Products.Any(x => x.Id == id))
+                        Console.WriteLine();
+
+                        Console.WriteLine("Ange Id för att läsa mer om produkten eller [0] för att backa");
+                        var inputId = Console.ReadLine();
+                        if (int.TryParse(inputId, out int id))
                         {
-                            var product = dbContext.Products
-                                .Where(x => x.Id == id)
-                                .FirstOrDefault();
-                            ShowProduct(product, customer, dbContext);
+                            if (id is 0)
+                            {
+                                loop = false;
+                            }
+                            else if (show.Any(x => x.Id == id)) //TODO
+                            {
+                                var product = show
+                                    .Where(x => x.Id == id)
+                                    .FirstOrDefault();
+                                ShowProduct(product, customer, dbContext);
+                                searchLoop = false;
+                                loop = false;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Fanns ingen produkt i urvalet med angivet produktId. Tryck valfri tangent för att fortsätta");
+                                Console.ReadKey(true);
+
+                            }
                         }
                         else
                         {
-                            Console.WriteLine("Fanns ingen produkt på valt id. Tryck valfri tangent för att fortsätta");
+                            Console.WriteLine("Felaktig inmatning. Tryck valfri tangent för att fortsätta");
+                            Console.ReadKey(true);
+
                         }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Felaktig inmatning. Tryck valfri tangent för att fortsätta");
                     }
                 }
                 else
                 {
                     Console.WriteLine("Sökningen gav ingen träff. Tryck valfri tangent för att fortsätta");
+                    Console.ReadKey(true);
+
                 }
-                Console.ReadKey(true);
             }
         }
 

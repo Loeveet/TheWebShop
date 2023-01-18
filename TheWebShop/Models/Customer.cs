@@ -33,43 +33,81 @@ namespace TheWebShop.Models
 
         internal static void MenuCustomer()
         {
+            var loop = true;
             using var dbContext = new TheWebShopContext();
-            Console.Clear();
-            Console.WriteLine("Sparade användare\n");
-            foreach (var c in dbContext.Customers)
+            while (loop)
             {
-                Console.WriteLine($"[{c.Id}] - {c.FirstName} {c.LastName} - {c.Email}");
-            }
-            Console.WriteLine("\n[G]äst");
-            Console.WriteLine("[B]efintlig kund");
-            Console.WriteLine("[N]y kund");
-            Console.WriteLine();
-            Console.WriteLine("Välj om du vill handla som gäst, använda befintlig kund eller skapa ny kund");
-            var choice = Console.ReadKey(true).KeyChar;
-            switch (choice)
-            {
-                case 'G':
-                case 'g':
-                    CustomerStartPage(new Customer { FirstName = "Gäst", Carts = new List<Cart>() }); // går vidare som gäst
-                    break;
-                case 'B':
-                case 'b':
-                    Console.WriteLine("Välj befintligt kundId"); // välj befintlig kund
-                    int custId = Managing.TryToParseInput();
-                    var customer = dbContext.Customers
-                        .Where(c => c.Id == custId)
-                        .FirstOrDefault();
-                    CustomerStartPage(customer);
-                    break;
-                case 'N':
-                case 'n':
-                    var newCustomer = CreateNewCustomer(); // skapa nu kund                    
-                    CustomerStartPage(newCustomer);
-                    break;
-                default:
-                    break;
-            }
+                Console.Clear();
+                Console.Write("Ange namn: ");
+                var customerName = Console.ReadLine().ToLower();
+                var customers = dbContext.Customers
+                    .Where(x => x.FirstName.ToLower().Contains(customerName) || x.LastName.ToLower().Contains(customerName) || x.Email.ToLower().Contains(customerName));
+                Console.WriteLine();
 
+                Console.WriteLine("Sparade användare\n");
+                foreach (var c in customers)
+                {
+                    Console.WriteLine($"[{c.Id}] - {c.FirstName} {c.LastName} - {c.Email}");
+                }
+                Console.WriteLine();
+                if (customers.Any())
+                {
+                    Console.WriteLine("Välj om du vill använda befintlig kund eller skapa ny kund");
+                    Console.WriteLine("[1] Befintlig kund");
+                    Console.WriteLine("[2] Ny kund");
+                    Console.WriteLine("[0] Backa");
+                    var choice = Console.ReadKey(true).KeyChar;
+                    switch (choice)
+                    {
+                        case '1':
+                            Console.WriteLine();
+                            Console.WriteLine("Välj befintligt kundId");
+                            int custId = Managing.TryToParseInput();
+                            var customer = dbContext.Customers
+                                .Where(c => c.Id == custId)
+                                .FirstOrDefault();
+                            if (customer is not null)
+                            {
+                                CustomerStartPage(customer);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Det finns ingen kund med valt kundId");
+                                Console.ReadKey();
+                            }
+                            break;
+                        case '2':
+                            Console.Clear();
+                            var newCustomer = CreateNewCustomer();
+                            CustomerStartPage(newCustomer);
+                            break;
+                        case '0':
+                            loop = false;
+                            break;
+
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Din sökning gav ingen träff. Vill du skapa en ny kund? [J/N]");
+                    var input = Console.ReadKey(true).KeyChar;
+                    switch (input)
+                    {
+                        case 'j':
+                        case 'J':
+                            var newCustomer = CreateNewCustomer();
+                            CustomerStartPage(newCustomer);
+                            break;
+                        case 'n':
+                        case 'N':
+                            Console.WriteLine();
+                            Console.WriteLine("Du måste registrera dig för att kunna handla. Tryck på valfri tangent");
+                            Console.ReadKey();
+                            loop = false;
+                            break;
+                    }
+                }
+            }
         }
         private static Customer CreateNewCustomer()
         {
@@ -94,13 +132,11 @@ namespace TheWebShop.Models
                 id = Managing.Create(new Country(), dbContext);
             }
 
-
             Console.WriteLine("Registrerade städer i valt land");
             foreach (var city in dbContext.Cities
                 .Where(x => x.CountryId == id))
             {
                 Console.WriteLine($"[{city.Id}] - {city.Name}");
-
             }
             Console.Write("Välj stadsId från listan eller skriv in ny stad: ");
             var cityId = Console.ReadLine();
@@ -109,8 +145,6 @@ namespace TheWebShop.Models
             {
                 cityId = Managing.Create(new City(), dbContext, id);
             }
-
-
 
 
             Console.Write("Ange gatuadress: ");
@@ -141,12 +175,10 @@ namespace TheWebShop.Models
                 PhoneNumber = phoneNumber,
                 DateOfBirth = new DateTime(birthYear, birthMonth, birthDay),
                 CreditCard = creditCardNr,
-                //Carts = new Cart{ Products = new List<Product>()},
                 Orders = new List<Order>()
             };
             dbContext.Add(customer);
             dbContext.SaveChanges();
-            //customer.Carts.CustomerId = customer.Id;
             dbContext.SaveChanges();
 
             return customer;
@@ -155,7 +187,6 @@ namespace TheWebShop.Models
         {
             using var dbContext = new TheWebShopContext();
             var customerLoop = true;
-            //var randomized = new List<Product>();
             while (customerLoop)
             {
                 Console.Clear();
@@ -191,17 +222,16 @@ namespace TheWebShop.Models
                 }
 
                 Console.WriteLine();
-                Console.WriteLine("[K]öp utvald produkt");
-                Console.WriteLine("[F]ritextsök på produkter");
-                Console.WriteLine("[S]hopsida");
-                Console.WriteLine("[V]arukorg");
-                Console.WriteLine("[B]acka");
-
+                Console.WriteLine("[1] Köp utvald produkt");
+                Console.WriteLine("[2] Fritextsök på produkter");
+                Console.WriteLine("[3] Shopsida");
+                Console.WriteLine("[4] Varukorg");
+                Console.WriteLine("[0] Backa");
+                Console.WriteLine();
                 var choice = Console.ReadKey(true).KeyChar;
                 switch (choice)
                 {
-                    case 'K':
-                    case 'k':
+                    case '1':
                         Console.WriteLine("Välj Id på den produkten du är intresserad av");
                         var input = Console.ReadLine();
                         if (int.TryParse(input, out int id))
@@ -224,20 +254,16 @@ namespace TheWebShop.Models
                         }
                         Console.ReadKey(true);
                         break;
-                    case 'F':
-                    case 'f':
+                    case '2':
                         Product.ShowSearchResults(customer);
                         break;
-                    case 'S':
-                    case 's':
+                    case '3':
                         Managing.ShoppingPage(customer);
                         break;
-                    case 'V':
-                    case 'v':
+                    case '4':
                         ShoppingCart(customer, dbContext);
                         break;
-                    case 'B':
-                    case 'b':
+                    case '0':
                         customerLoop = false;
                         break;
                     default:

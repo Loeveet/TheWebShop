@@ -43,7 +43,7 @@ namespace TheWebShop.Models
                         Console.WriteLine("Ange namn på ny fraktmetod, samt en kort beskrivning");
                         var name = Console.ReadLine();
                         Console.WriteLine("Ange pris för " + name);
-                        int price = Convert.ToInt32(Console.ReadLine());
+                        int price = Managing.TryToParseInput();
                         dbContext.Freights.Add(new Freight { Name = name, Price = price });
                         dbContext.SaveChanges();
                         break;

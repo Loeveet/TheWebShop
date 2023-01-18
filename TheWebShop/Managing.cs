@@ -16,7 +16,7 @@ namespace TheWebShop
                     "Var vänlig välj om du är kund eller admin\n");
 
                 Console.WriteLine("[A]dmin");
-                Console.WriteLine("[K]under");
+                Console.WriteLine("[K]und");
                 Console.WriteLine("[L]ämna TheWebShop");
 
                 var choice = Console.ReadKey(true).KeyChar;
@@ -81,9 +81,9 @@ namespace TheWebShop
                             var buyLoop = true;
                             while (buyLoop)
                             {
+                                //ChooseProduct();
                                 Cart.PrintCart(customer);
                                 int productId = TryToParseInput();
-                                //int productId = -1;
 
                                 var product = dbContext.Products
                                     .Where(x => x.Id == productId && x.Category.Id == categoryId)
@@ -102,6 +102,7 @@ namespace TheWebShop
                                     Product.ShowProduct(product, customer, dbContext);
                                     buyLoop = false;
                                 }
+
                             }
                         }
                     }
@@ -118,6 +119,30 @@ namespace TheWebShop
             }
         }
 
+        private static void ChooseProduct(Customer customer, TheWebShopContext dbContext)
+        {
+            //Cart.PrintCart(customer);
+            //int productId = TryToParseInput();
+
+            //var product = dbContext.Products
+            //    .Where(x => x.Id == productId && x.Category.Id == categoryId)
+            //    .FirstOrDefault();
+            //if (productId == 0)
+            //{
+            //    buyLoop = false;
+            //    showProductLoop = false;
+            //}
+            //else if (product is null)
+            //{
+            //    Console.WriteLine("Vald produkt finns ej, försök igen");
+            //}
+            //else
+            //{
+            //    Product.ShowProduct(product, customer, dbContext);
+            //    buyLoop = false;
+            //}
+        }
+
         public static void MenuAdmin()
         {
             var adminLoop = true;
@@ -128,8 +153,7 @@ namespace TheWebShop
                 Console.WriteLine("[2] Hantera kunder");
                 Console.WriteLine("[3] Hantera betalmetoder");
                 Console.WriteLine("[4] Hantera fraktmetoder");
-                Console.WriteLine("[5] Hantera ordrar");
-                Console.WriteLine("[6] Hantera länder och städer");
+                Console.WriteLine("[5] Hantera länder och städer");
                 Console.WriteLine("[0] Backa meny");
 
                 var choice = Console.ReadKey(true).KeyChar;
@@ -148,9 +172,6 @@ namespace TheWebShop
                         Freight.HandlingFreightMethod();
                         break;
                     case '5':
-                        // Order
-                        break;
-                    case '6':
                         MenuCountryCity();
                         break;
                     case '0':
