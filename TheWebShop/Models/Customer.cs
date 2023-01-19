@@ -124,7 +124,7 @@ namespace TheWebShop.Models
             {
                 Console.WriteLine($"[{c.Id}] - {c.Name}");
             }
-            Console.Write("Välj landsId från listan eller skriv land om du vill lägga till nytt land: "); //TODO
+            Console.Write("Välj landsId från listan eller skriv land om du vill lägga till nytt land: ");
             var country = Console.ReadLine();
             int id;
             if (!int.TryParse(country, out id))
