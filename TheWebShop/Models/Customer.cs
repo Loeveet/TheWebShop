@@ -177,7 +177,6 @@ namespace TheWebShop.Models
                 Orders = new List<Order>()
             };
             dbContext.Add(customer);
-            //dbContext.SaveChanges();
             dbContext.SaveChanges();
 
             return customer;
@@ -399,16 +398,19 @@ namespace TheWebShop.Models
                 };
 
                 List<OrderProduct> orderProducts = new();
-                var cartResult = new List<Cart>();
+
+                var myCart = dbContext.Carts
+                .Where(x => x.CustomerId == customer.Id)
+                .Include(x => x.Product)
+                .ToList();
 
 
-                foreach (var x in cartResult)
+                foreach (var x in myCart)
                 {
                     orderProducts.Add(new OrderProduct
                     {
                         ProductId = x.ProductId,
                         UnitPrice = x.Product.Price
-
                     });
                 }
 
@@ -454,7 +456,7 @@ namespace TheWebShop.Models
                         Console.WriteLine("-----------------------------------------------------");
                         Console.WriteLine();
                         Console.WriteLine("Tack för din beställning!");
-                        Console.WriteLine("Tryck valfri tangent för att gå tillbaka till menyn");
+                        Console.WriteLine("Tryck valfri tangent för att gå tillbaka till varukorgen");
 
                         Console.ReadKey();
                         loop = false;

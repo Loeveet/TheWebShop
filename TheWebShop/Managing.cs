@@ -126,6 +126,7 @@ namespace TheWebShop
                 Console.WriteLine("[3] Hantera betalmetoder");
                 Console.WriteLine("[4] Hantera fraktmetoder");
                 Console.WriteLine("[5] Hantera länder och städer");
+                Console.WriteLine("[6] Visa statistik");
                 Console.WriteLine("[0] Backa meny");
 
                 var choice = Console.ReadKey(true).KeyChar;
@@ -146,6 +147,9 @@ namespace TheWebShop
                     case '5':
                         MenuCountryCity();
                         break;
+                    case '6':
+                        Query.HandleQueries();
+                        break;
                     case '0':
                         adminLoop = false;
                         break;
@@ -154,6 +158,8 @@ namespace TheWebShop
                 }
             }
         }
+
+
 
         private static void HandlingCustomers()
         {
