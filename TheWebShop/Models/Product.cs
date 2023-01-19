@@ -27,17 +27,17 @@ namespace TheWebShop.Models
         internal static void HandlingProduct()
         {
             using var dbContext = new TheWebShopContext();
-            var exitLoop = false;
-            var productLoop = true;
-            while (productLoop)
+            var isNotNullLoop = false;
+            var loop = true;
+            while (loop)
             {
                 Console.Clear();
 
-                Console.WriteLine($"Id\tUtvald\tNamn\t\tKategori");
-                Console.WriteLine("-----------------------------------------");
+                Console.WriteLine($"Id\tUtvald\tNamn\t\tKategori\tLagersaldo");
+                Console.WriteLine("-----------------------------------------------------------");
                 foreach (var product in dbContext.Products.Include(x => x.Category))
                 {
-                    Console.WriteLine($"[{product.Id}]\t{(product.ChosenProduct ? "Ja" : "Nej")}\t{product.Name}\t{product.Category.Name}");
+                    Console.WriteLine($"[{product.Id}]\t{(product.ChosenProduct ? "Ja" : "Nej")}\t{product.Name}\t{product.Category.Name}\t{product.Quantity}");
                 }
 
                 Console.WriteLine();
@@ -63,17 +63,17 @@ namespace TheWebShop.Models
                             break;
                         }
                         Console.Write("Pris: ");
-                        int price = Convert.ToInt32(Console.ReadLine());
+                        var price = Managing.TryToParseInput();
                         Console.Write("Detaljerad info: ");
                         var detailedInfo = Console.ReadLine();
                         Console.Write("Antal: ");
-                        int quantity = Convert.ToInt32(Console.ReadLine());
+                        var quantity = Managing.TryToParseInput();
                         foreach (var s in dbContext.Suppliers)
                         {
                             Console.WriteLine($"[{s.Id}] {s.Name}");
                         }
                         int supplierId = 0;
-                        while (!exitLoop)
+                        while (!isNotNullLoop)
                         {
                             Console.Write("Ange id på leverantör: ");
 
@@ -82,9 +82,9 @@ namespace TheWebShop.Models
                             var supplier = dbContext.Suppliers.Where(x => x.Id == supplierId).FirstOrDefault();
                             if (supplier is not null)
                             {
-                                exitLoop = true;
+                                isNotNullLoop = true;
                             }
-                            else // TODO Lägga in metod för att lägga till supplier INTE H ELT KLART!!!
+                            else
                             {
                                 Console.WriteLine("Leverantören fanns ej. Tryck valfri tangent");
                                 Supplier.Create(new Supplier(), dbContext);
@@ -96,8 +96,8 @@ namespace TheWebShop.Models
                             Console.WriteLine($"[{c.Id}] {c.Name}");
                         }
                         int categoryId = 0;
-                        exitLoop = false;
-                        while (!exitLoop)
+                        isNotNullLoop = false;
+                        while (!isNotNullLoop)
                         {
                             Console.Write("Ange id på kategori: ");
                             categoryId = Managing.TryToParseInput();
@@ -105,12 +105,11 @@ namespace TheWebShop.Models
                             var category = dbContext.Categories.Where(x => x.Id == categoryId).FirstOrDefault();
                             if (category is not null)
                             {
-                                exitLoop = true;
+                                isNotNullLoop = true;
                             }
-                            else // TODO Lägga in metod för att lägga till kategori, se utkommenterat
+                            else
                             {
                                 Console.WriteLine("Kategorin fanns ej. Tryck valfri tangent");
-                                //Category.Create(new Category(), dbContext);
                                 Console.ReadKey(true);
                             }
                         }
@@ -128,25 +127,23 @@ namespace TheWebShop.Models
                         });
                         dbContext.SaveChanges();
 
-
-
                         break;
                     case '2':
 
                         Console.WriteLine("Ange id på produkten du vill ta bort");
-                        int id2 = Managing.TryToParseInput();
+                        int removeProductId = Managing.TryToParseInput();
 
-                        var product2 = dbContext.Products.Where(x => x.Id == id2).FirstOrDefault();
-                        if (product2 is not null)
+                        var removeProduct = dbContext.Products.Where(x => x.Id == removeProductId).FirstOrDefault();
+                        if (removeProduct is not null)
                         {
-                            Console.WriteLine($"Är du säker på att du vill radera {product2.Name} med id {product2.Id}?");
+                            Console.WriteLine($"Är du säker på att du vill radera {removeProduct.Name} med id {removeProduct.Id}?");
                             Console.WriteLine("[J] för ja");
                             Console.WriteLine("[N] för nej");
                             var answer = Console.ReadKey(true).KeyChar;
 
                             if (answer == 'j' || answer == 'J')
                             {
-                                dbContext.Products.Remove(product2);
+                                dbContext.Products.Remove(removeProduct);
                                 dbContext.SaveChanges();
                             }
                             else
@@ -164,57 +161,48 @@ namespace TheWebShop.Models
                     case '3':
                         Console.WriteLine("Ange id på den produkten du vill ändra");
 
-                        int id3 = Managing.TryToParseInput();
+                        int changeProductId = Managing.TryToParseInput();
 
-                        var product3 = dbContext.Products.Where(x => x.Id == id3).FirstOrDefault();
-                        if (product3 is not null)
+                        var changeProduct = dbContext.Products.Where(x => x.Id == changeProductId).FirstOrDefault();
+                        if (changeProduct is not null)
                         {
                             Console.WriteLine($"Ange vad du vill ändra på");
-                            Console.WriteLine("[N]amn");
-                            Console.WriteLine("[P]ris");
-                            Console.WriteLine("[B]eskrivning");
-                            Console.WriteLine("[L]agersaldo");
-                            Console.WriteLine("[U]tvald");
+                            Console.WriteLine("[1] Namn");
+                            Console.WriteLine("[2] Pris");
+                            Console.WriteLine("[3] Beskrivning");
+                            Console.WriteLine("[4] Lagersaldo");
+                            Console.WriteLine("[0] Utvald");
 
                             var answer2 = Console.ReadKey(true).KeyChar;
                             switch (answer2)
                             {
-                                case 'N':
-                                case 'n':
+                                case '1':
                                     Console.Write("Ange nytt namn: ");
-                                    product3.Name = Console.ReadLine();
-                                    dbContext.SaveChanges();
+                                    changeProduct.Name = Console.ReadLine();
                                     break;
-                                case 'P':
-                                case 'p':
-                                    Console.WriteLine("Nuvarande pris: " + product3.Price);
+                                case '2':
+                                    Console.WriteLine("Nuvarande pris: " + changeProduct.Price);
                                     Console.Write("Ange nytt pris: ");
-                                    product3.Price = Convert.ToInt32(Console.ReadLine());
-                                    dbContext.SaveChanges();
+                                    changeProduct.Price = Managing.TryToParseInput();
                                     break;
-                                case 'B':
-                                case 'b':
-                                    Console.WriteLine("Nuvarande beskrivning: " + product3.DetailedInfo);
+                                case '3':
+                                    Console.WriteLine("Nuvarande beskrivning: " + changeProduct.DetailedInfo);
                                     Console.Write("Ange ny beskrivning: ");
-                                    product3.DetailedInfo = Console.ReadLine();
-                                    dbContext.SaveChanges();
+                                    changeProduct.DetailedInfo = Console.ReadLine();
                                     break;
-                                case 'L':
-                                case 'l':
-                                    Console.WriteLine("Nuvarande lagersaldo: " + product3.Quantity);
+                                case '4':
+                                    Console.WriteLine("Nuvarande lagersaldo: " + changeProduct.Quantity);
                                     Console.Write("Ange nytt lagersaldo: ");
-                                    product3.Quantity = Convert.ToInt32(Console.ReadLine());
-                                    dbContext.SaveChanges();
+                                    changeProduct.Quantity = Managing.TryToParseInput();
                                     break;
-                                case 'U':
-                                case 'u':
-                                    Console.Write(product3.Name + " är ");
-                                    Console.WriteLine(product3.ChosenProduct == true ? "utvald produkt" : "ej utvald produkt");
+                                case '0':
+                                    Console.Write(changeProduct.Name + " är ");
+                                    Console.WriteLine(changeProduct.ChosenProduct == true ? "utvald produkt" : "ej utvald produkt");
                                     Console.Write("Vill du ändra utvald produkt?: ");
                                     var chosenProduct1 = Console.ReadLine().ToLower();
                                     if (chosenProduct1 == "ja")
                                     {
-                                        product3.ChosenProduct = !product3.ChosenProduct;
+                                        changeProduct.ChosenProduct = !changeProduct.ChosenProduct;
                                         dbContext.SaveChanges();
                                     }
                                     break;
@@ -223,6 +211,7 @@ namespace TheWebShop.Models
                                     Console.ReadKey(true);
                                     break;
                             }
+                            dbContext.SaveChanges();
                         }
                         else
                         {
@@ -231,7 +220,7 @@ namespace TheWebShop.Models
                         }
                         break;
                     case '0':
-                        productLoop = false;
+                        loop = false;
                         break;
                     default:
                         break;
@@ -241,18 +230,21 @@ namespace TheWebShop.Models
 
         internal static void ShowProduct(Product product, Customer customer, TheWebShopContext dbContext)
         {
-            var showProdLoop = true;
+            var loop = true;
             if (product.Quantity == 0)
             {
                 Console.Clear();
-                Console.WriteLine(product.Name + " finns ej i lager");
-                Console.WriteLine();
+                Cart.PrintCart(customer);
                 Console.WriteLine($"Id\tPris \t Namn");
                 Console.WriteLine($"{product.Id}\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
+                Console.WriteLine();
+                Console.WriteLine(product.Name + " finns ej i lager. Tryck på valfri tangent");
+                Console.ReadKey(true);
+                
             }
             else
             {
-                while (showProdLoop)
+                while (loop)
                 {
                     Console.Clear();
                     Cart.PrintCart(customer);
@@ -260,39 +252,28 @@ namespace TheWebShop.Models
                     Console.WriteLine();
                     Console.WriteLine($"[{product.Id}]\t{product.Price} kr\t {product.Name} - {product.DetailedInfo}");
                     Console.WriteLine("Skriv antalet av denna produkt du vill köpa eller 0 för att backa i menyn");
-                    var customerAnswer = Managing.TryToParseInput();
-                    if (customerAnswer != 0 && customerAnswer <= product.Quantity)
+                    var productsToBuy = Managing.TryToParseInput();
+                    if (productsToBuy != 0 && productsToBuy <= product.Quantity)
                     {
-                        //customer.Carts = new List<Cart>();
-                        if (customer.FirstName != "Gäst")
+
+                        for (int i = 0; i < productsToBuy; i++)
                         {
-                            for (int i = 0; i < customerAnswer; i++)
-                            {
-                                dbContext.Add(new Cart { CustomerId = customer.Id, ProductId = product.Id });
-                                product.Quantity--;
-                            }
-                            dbContext.SaveChanges();
+                            dbContext.Add(new Cart { CustomerId = customer.Id, ProductId = product.Id });
+                            product.Quantity--;
                         }
-                        else
-                        {
-                            // TODO: Kan vara problem att ta product.Quantity-- om man stänger ner programmet som gäst??
-                            for (int i = 0; i < customerAnswer; i++)
-                            {
-                                customer.Carts.Add(new Cart { Product = product });
-                                product.Quantity--;
-                            }
-                        }
-                        Console.WriteLine($"{customerAnswer} st {product.Name} är tillagt i varukorgen");
-                        showProdLoop = false;
+                        dbContext.SaveChanges();
+
+                        Console.WriteLine($"{productsToBuy} st {product.Name} är tillagt i varukorgen");
+                        loop = false;
                     }
-                    else if (customerAnswer != 0 && customerAnswer > product.Quantity)
+                    else if (productsToBuy != 0 && productsToBuy > product.Quantity)
                     {
                         Console.WriteLine("Du har valt fler produkter än vad som finns i lager.");
                         Console.ReadKey(true);
                     }
                     else
                     {
-                        showProdLoop = false;
+                        loop = false;
                     }
                 }
             }
@@ -304,19 +285,19 @@ namespace TheWebShop.Models
             while (searchLoop)
             {
                 Console.Clear();
-                Console.WriteLine("Fritextsökning för produkter");
                 Cart.PrintCart(customer);
+                Console.Write("Fritextsökning för produkter: ");
 
                 var input = Console.ReadLine();
 
                 using var dbContext = new TheWebShopContext();
-                var show = dbContext.Products
+                var searchResult = dbContext.Products
                     .Include(x => x.Supplier)
                     .Include(x => x.Category)
                     .Where(x => x.Name.Contains(input) || x.DetailedInfo.Contains(input) || x.Supplier.Name.Contains(input) || x.Category.Name.Contains(input));
 
                 Console.WriteLine();
-                if (show.Any())
+                if (searchResult.Any())
                 {
                     var loop = true;
                     while (loop)
@@ -325,39 +306,31 @@ namespace TheWebShop.Models
                         Cart.PrintCart(customer);
                         Console.WriteLine("Din sökning gav följande träffar");
                         Console.WriteLine("----------------------------------");
-                        foreach (var p in show)
+                        foreach (var product in searchResult)
                         {
-                            Console.WriteLine($"[{p.Id}] {p.Name} - {p.Price} kr - {p.DetailedInfo}");
+                            Console.WriteLine($"[{product.Id}] {product.Name} - {product.Price} kr - {product.DetailedInfo}");
                         }
                         Console.WriteLine();
 
                         Console.WriteLine("Ange Id för att läsa mer om produkten eller [0] för att backa");
-                        var inputId = Console.ReadLine();
-                        if (int.TryParse(inputId, out int id))
-                        {
-                            if (id is 0)
-                            {
-                                loop = false;
-                            }
-                            else if (show.Any(x => x.Id == id)) //TODO
-                            {
-                                var product = show
-                                    .Where(x => x.Id == id)
-                                    .FirstOrDefault();
-                                ShowProduct(product, customer, dbContext);
-                                searchLoop = false;
-                                loop = false;
-                            }
-                            else
-                            {
-                                Console.WriteLine("Fanns ingen produkt i urvalet med angivet produktId. Tryck valfri tangent för att fortsätta");
-                                Console.ReadKey(true);
+                        var productId = Managing.TryToParseInput();
 
-                            }
+                        if (productId is 0)
+                        {
+                            loop = false;
+                        }
+                        else if (searchResult.Any(x => x.Id == productId))
+                        {
+                            var product = searchResult
+                                .Where(x => x.Id == productId)
+                                .FirstOrDefault();
+                            ShowProduct(product, customer, dbContext);
+                            searchLoop = false;
+                            loop = false;
                         }
                         else
                         {
-                            Console.WriteLine("Felaktig inmatning. Tryck valfri tangent för att fortsätta");
+                            Console.WriteLine("Fanns ingen produkt i urvalet med angivet produktId. Tryck valfri tangent för att fortsätta");
                             Console.ReadKey(true);
 
                         }

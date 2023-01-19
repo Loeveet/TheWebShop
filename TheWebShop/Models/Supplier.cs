@@ -80,14 +80,7 @@ namespace TheWebShop.Models
                         break;
                     case '3':
                         Console.WriteLine("Ange id på leverantören du vill ändra");
-                        var input2 = Console.ReadLine();
-
-                        int id2;
-                        while (!int.TryParse(input2, out id2))
-                        {
-                            Console.WriteLine("Felaktig inmatning, försök igen");
-                            input2 = Console.ReadLine();
-                        }
+                        var id2 = Managing.TryToParseInput();
 
                         var supplier2 = dbContext.Suppliers.Where(x => x.Id == id2).FirstOrDefault();
                         if (supplier2 is not null)

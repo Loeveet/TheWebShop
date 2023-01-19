@@ -81,7 +81,6 @@ namespace TheWebShop
                             var buyLoop = true;
                             while (buyLoop)
                             {
-                                //ChooseProduct();
                                 Cart.PrintCart(customer);
                                 int productId = TryToParseInput();
 
