@@ -27,7 +27,6 @@ namespace TheWebShop.Models
         internal static void HandlingProduct()
         {
             using var dbContext = new TheWebShopContext();
-            var isNotNullLoop = false;
             var loop = true;
             while (loop)
             {
@@ -55,77 +54,7 @@ namespace TheWebShop.Models
                         {
                             Console.WriteLine($"[{product.Id}] {product.Name}");
                         }
-                        Console.WriteLine("\nAnge information på ny produkt eller ange [0] för att backa");
-                        Console.Write("Produktnamn: ");
-                        var name = Console.ReadLine();
-                        if (name == "0")
-                        {
-                            break;
-                        }
-                        Console.Write("Pris: ");
-                        var price = Managing.TryToParseInput();
-                        Console.Write("Detaljerad info: ");
-                        var detailedInfo = Console.ReadLine();
-                        Console.Write("Antal: ");
-                        var quantity = Managing.TryToParseInput();
-                        foreach (var s in dbContext.Suppliers)
-                        {
-                            Console.WriteLine($"[{s.Id}] {s.Name}");
-                        }
-                        int supplierId = 0;
-                        while (!isNotNullLoop)
-                        {
-                            Console.Write("Ange id på leverantör: ");
-
-                            supplierId = Managing.TryToParseInput();
-
-                            var supplier = dbContext.Suppliers.Where(x => x.Id == supplierId).FirstOrDefault();
-                            if (supplier is not null)
-                            {
-                                isNotNullLoop = true;
-                            }
-                            else
-                            {
-                                Console.WriteLine("Leverantören fanns ej. Tryck valfri tangent");
-                                Supplier.Create(new Supplier(), dbContext);
-                                Console.ReadKey(true);
-                            }
-                        }
-                        foreach (var c in dbContext.Categories)
-                        {
-                            Console.WriteLine($"[{c.Id}] {c.Name}");
-                        }
-                        int categoryId = 0;
-                        isNotNullLoop = false;
-                        while (!isNotNullLoop)
-                        {
-                            Console.Write("Ange id på kategori: ");
-                            categoryId = Managing.TryToParseInput();
-
-                            var category = dbContext.Categories.Where(x => x.Id == categoryId).FirstOrDefault();
-                            if (category is not null)
-                            {
-                                isNotNullLoop = true;
-                            }
-                            else
-                            {
-                                Console.WriteLine("Kategorin fanns ej. Tryck valfri tangent");
-                                Console.ReadKey(true);
-                            }
-                        }
-
-
-
-                        dbContext.Products.Add(new Product
-                        {
-                            Name = name,
-                            Price = price,
-                            DetailedInfo = detailedInfo,
-                            Quantity = quantity,
-                            CategoryId = categoryId,
-                            SupplierId = supplierId
-                        });
-                        dbContext.SaveChanges();
+                        Create(new Product(), dbContext);
 
                         break;
                     case '2':
@@ -226,6 +155,76 @@ namespace TheWebShop.Models
                         break;
                 }
             }
+        }
+
+        private static void Create(Product product, TheWebShopContext dbContext)
+        {
+            var loop = false;
+            Console.WriteLine("\nAnge information på ny produkt eller ange [0] för att backa");
+            Console.Write("Produktnamn: ");
+            product.Name = Console.ReadLine();
+            if (product.Name == "0")
+            {
+                return;
+            }
+            Console.Write("Pris: ");
+            product.Price = Managing.TryToParseInput();
+            Console.Write("Detaljerad info: ");
+            product.DetailedInfo = Console.ReadLine();
+            Console.Write("Antal: ");
+            product.Quantity = Managing.TryToParseInput();
+            foreach (var s in dbContext.Suppliers)
+            {
+                Console.WriteLine($"[{s.Id}] {s.Name}");
+            }
+            int supplierId = 0;
+            while (!loop)
+            {
+                Console.Write("Ange id på leverantör: ");
+
+                supplierId = Managing.TryToParseInput();
+
+                var supplier = dbContext.Suppliers.Where(x => x.Id == supplierId).FirstOrDefault();
+                if (supplier is not null)
+                {
+                    product.SupplierId = supplierId;
+                    loop = true;
+                }
+                else
+                {
+                    Console.WriteLine("Leverantören fanns ej. Tryck valfri tangent");
+                    Supplier.Create(new Supplier(), dbContext);
+                    Console.ReadKey(true);
+                }
+            }
+            foreach (var c in dbContext.Categories)
+            {
+                Console.WriteLine($"[{c.Id}] {c.Name}");
+            }
+            int categoryId = 0;
+            loop = false;
+            while (!loop)
+            {
+                Console.Write("Ange id på kategori: ");
+                categoryId = Managing.TryToParseInput();
+
+                var category = dbContext.Categories.Where(x => x.Id == categoryId).FirstOrDefault();
+                if (category is not null)
+                {
+                    product.CategoryId = categoryId;
+                    loop = true;
+                }
+                else
+                {
+                    Console.WriteLine("Kategorin fanns ej. Tryck valfri tangent");
+                    Console.ReadKey(true);
+                }
+            }
+
+
+
+            dbContext.Products.Add(product);
+            dbContext.SaveChanges();
         }
 
         internal static void ShowProduct(Product product, Customer customer, TheWebShopContext dbContext)

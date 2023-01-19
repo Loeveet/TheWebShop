@@ -23,10 +23,11 @@ namespace TheWebShop.Models
                 Console.Clear();
 
 
-                Console.WriteLine($"Id Namn\tPris");
+                Console.WriteLine($"Id\tNamn\tPris");
+                Console.WriteLine("---------------------");
                 foreach (var freight in dbContext.Freights)
                 {
-                    Console.WriteLine($"{freight.Id} {freight.Name}\t{freight.Price}");
+                    Console.WriteLine($"[{freight.Id}]\t{freight.Name}\t{freight.Price}");
                 }
 
                 Console.WriteLine();

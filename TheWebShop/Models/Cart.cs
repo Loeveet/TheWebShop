@@ -14,10 +14,6 @@ namespace TheWebShop.Models
         public int ProductId { get; set; }
         public virtual Customer Customer { get; set; }
         public virtual Product Product { get; set; }
-        internal static void HandlingShoppingCart()
-        {
-            // Metod för att hantera varukorg
-        }
         internal static void PrintCart(Customer customer)
         {
             var (StartLeft, StartTop) = Console.GetCursorPosition();
@@ -25,19 +21,11 @@ namespace TheWebShop.Models
             int top = 2;
             double totalCost = 0;
             using var dbContext = new TheWebShopContext();
-            var result = new List<Cart>();
-            if (customer.FirstName != "Gäst")
-            {
-                result = dbContext.Carts
+
+            var myCart = dbContext.Carts
                 .Where(x => x.CustomerId == customer.Id)
                 .Include(x => x.Product)
-                .ToList();
-            }
-            else
-            {
-                result = customer.Carts.ToList();
-            }
-            var myCart = result
+                .ToList()
                 .GroupBy(x => x.Product);
 
             Console.SetCursorPosition(left, top - 1);

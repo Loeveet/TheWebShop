@@ -29,10 +29,11 @@ namespace TheWebShop.Models
             {
                 Console.Clear();
 
-                Console.WriteLine($"Id Namn");
+                Console.WriteLine($"Id\tNamn");
+                Console.WriteLine("-------------");
                 foreach (var supplier in dbContext.Suppliers)
                 {
-                    Console.WriteLine($"{supplier.Id} {supplier.Name}");
+                    Console.WriteLine($"[{supplier.Id}]\t{supplier.Name}");
                 }
 
                 Console.WriteLine();
@@ -48,7 +49,6 @@ namespace TheWebShop.Models
                         Create(new Supplier(), dbContext);
                         break;
                     case '2':
-                        // Klar
                         Console.WriteLine("Ange id på leverantören du vill ta bort");
                         int id = Managing.TryToParseInput();
 

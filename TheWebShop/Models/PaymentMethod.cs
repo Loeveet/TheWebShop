@@ -21,10 +21,11 @@ namespace TheWebShop.Models
             {
                 Console.Clear();
 
-                Console.WriteLine($"Id Namn");
+                Console.WriteLine($"Id\tNamn");
+                Console.WriteLine("-------------");
                 foreach (var pm in dbContext.PaymentMethods)
                 {
-                    Console.WriteLine($"{pm.Id} {pm.Name}");
+                    Console.WriteLine($"[{pm.Id}]\t{pm.Name}");
                 }
 
                 Console.WriteLine();
@@ -37,11 +38,9 @@ namespace TheWebShop.Models
                 switch (choice)
                 {
                     case '1':
-                        // Klar
                         Create(new PaymentMethod(), dbContext);
                         break;
                     case '2':
-                        // Klar
                         Console.WriteLine("Ange id på den betalmetod du vill ta bort");
                         int id = Managing.TryToParseInput();
 

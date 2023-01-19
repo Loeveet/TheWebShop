@@ -17,15 +17,16 @@ namespace TheWebShop.Models
         internal static void HandlingCategory()
         {
             using var dbContext = new TheWebShopContext();
-            var categoryLoop = true;
-            while (categoryLoop)
+            var loop = true;
+            while (loop)
             {
                 Console.Clear();
 
-                Console.WriteLine($"Id Namn");
+                Console.WriteLine($"Id\tNamn\t\tBeskrivning");
+                Console.WriteLine("------------------------------------");
                 foreach (var category in dbContext.Categories)
                 {
-                    Console.WriteLine($"{category.Id} {category.Name}\t{category.Description}");
+                    Console.WriteLine($"[{category.Id}]\t{category.Name}\t{category.Description}");
                 }
 
                 Console.WriteLine();
@@ -38,11 +39,9 @@ namespace TheWebShop.Models
                 switch (choice)
                 {
                     case '1':
-                        // Klar
                         Create(new Category(), dbContext);
                         break;
                     case '2':
-                        // Klar
                         Console.WriteLine("Ange id på den kategorin du vill ta bort");
                         int id = Managing.TryToParseInput();
 
@@ -112,7 +111,7 @@ namespace TheWebShop.Models
                         }
                         break;
                     case '0':
-                        categoryLoop = false;
+                        loop = false;
                         break;
                     default:
                         break;

@@ -183,11 +183,9 @@ namespace TheWebShop
         }
 
 
-        //TODO Hantera kunder som admin, Beställningshistorik.
         private static void HandlingCustomers()
         {
             using var dbContext = new TheWebShopContext();
-            var exitLoop = false;
             var loop = true;
             while (loop)
             {
@@ -196,18 +194,19 @@ namespace TheWebShop
                 Console.WriteLine("[2] Sök efter en kund");
                 Console.WriteLine("[0] För att backa");
                 var input = Console.ReadKey(true).KeyChar;
+                Console.Clear();
                 switch (input)
                 {
                     case '1':
-                        Console.WriteLine($"Id Namn\t\tMail");
+                        Console.WriteLine($"Id\tNamn\t\t\tMail");
+                        Console.WriteLine("-------------------------------------");
                         foreach (var customer1 in dbContext.Customers)
                         {
-                            Console.WriteLine($"[{customer1.Id}] {customer1.FirstName + ' ' + customer1.LastName}\t{customer1.Email}");
+                            Console.WriteLine($"[{customer1.Id}]\t{customer1.FirstName + ' ' + customer1.LastName}\t\t{customer1.Email}");
                         }
                         Console.WriteLine();
                         break;
                     case '2':
-                        Console.Clear();
                         Console.WriteLine("Fritextsökning för kunder");
 
                         var input2 = Console.ReadLine();
@@ -218,9 +217,11 @@ namespace TheWebShop
                         Console.WriteLine();
                         if (show.Any())
                         {
+                            Console.WriteLine($"Id\tNamn\t\t\tMail");
+                            Console.WriteLine("------------------------------------");
                             foreach (var customer1 in show)
                             {
-                                Console.WriteLine($"[{customer1.Id}] {customer1.FirstName + ' ' + customer1.LastName}\t{customer1.Email}");
+                                Console.WriteLine($"[{customer1.Id}]\t{customer1.FirstName + ' ' + customer1.LastName}\t\t{customer1.Email}");
                             }
                             Console.WriteLine();
                         }
@@ -231,8 +232,7 @@ namespace TheWebShop
                         }
                         break;
                     case '0':
-                        loop = false;
-                        break;
+                        loop = false; return;
                 }
                 var customer = new Customer();
                 Console.WriteLine("Ange Id på kunden du vill administrera eller [0] för att backa");
@@ -254,10 +254,9 @@ namespace TheWebShop
                 {
                     Console.WriteLine("Fanns ingen kund på valt id. Tryck valfri tangent för att fortsätta");
                     Console.ReadKey(true);
+                    return;
                 }
 
-                //Det kan bli tokigt ifall man skulle ha extremt många kunder registrerade. 
-                //Reflektera över annan potentiel lösning på redovinsning med Micke
 
                 Console.WriteLine();
                 Console.WriteLine("[1] Ändra kunduppgifter");
