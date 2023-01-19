@@ -118,7 +118,6 @@ namespace TheWebShop.Models
             Console.Write("Ange efternamn: ");
             var lastName = Console.ReadLine();
 
-
             Console.WriteLine("Registrerade länder");
             foreach (var c in dbContext.Countries)
             {
