@@ -124,7 +124,7 @@ namespace TheWebShop.Models
             {
                 Console.WriteLine($"[{c.Id}] - {c.Name}");
             }
-            Console.Write("Välj landsId från listan eller skriv land om du vill lägga till nytt land: ");
+            Console.Write("Välj landsId från listan eller skriv land om du vill lägga till nytt land: "); //TODO
             var country = Console.ReadLine();
             int id;
             if (!int.TryParse(country, out id))
@@ -150,17 +150,17 @@ namespace TheWebShop.Models
             Console.Write("Ange gatuadress: ");
             var adress = Console.ReadLine();
             Console.Write("Ange postnummer: ");
-            int zipCode = Convert.ToInt32(Console.ReadLine());
+            var zipCode = Managing.TryToParseInput();
             Console.Write("Ange email: ");
             var email = Console.ReadLine();
             Console.Write("Ange telefonnummer: ");
             var phoneNumber = Console.ReadLine();
             Console.Write("Ange födelseår, fyra siffror: ");
-            int birthYear = Convert.ToInt32(Console.ReadLine());
+            var birthYear = Managing.TryToParseInput();
             Console.Write("Ange födelsemånad: ");
-            int birthMonth = Convert.ToInt32(Console.ReadLine());
+            var birthMonth = Managing.TryToParseInput();
             Console.Write("Ange födelsedatum: ");
-            int birthDay = Convert.ToInt32(Console.ReadLine());
+            var birthDay = Managing.TryToParseInput();
             Console.Write("Ange kreditkortsnummer, tolv siffror: ");
             var creditCardNr = Console.ReadLine();
 
@@ -178,7 +178,7 @@ namespace TheWebShop.Models
                 Orders = new List<Order>()
             };
             dbContext.Add(customer);
-            dbContext.SaveChanges();
+            //dbContext.SaveChanges();
             dbContext.SaveChanges();
 
             return customer;
@@ -393,7 +393,6 @@ namespace TheWebShop.Models
 
                 Order order = new Order
                 {
-                    // TODO: customer.Id funkar ej om man är gäst
                     CustomerId = customer.Id,
                     FreightId = freightMethodId,
                     PaymentMethodId = paymentMethodId,

@@ -40,7 +40,6 @@ namespace TheWebShop.Models
                 {
                     case '1':
                         Console.Clear();
-                        // Klar
                         foreach (var country1 in dbContext.Countries)
                         {
                             Console.WriteLine($"[{country1.Id}] {country1.Name}");
@@ -69,7 +68,6 @@ namespace TheWebShop.Models
                         }
                         break;
                     case '2':
-                        // Klar
                         Console.WriteLine("Ange id på staden du vill ta bort");
 
                         int id2 = Managing.TryToParseInput();

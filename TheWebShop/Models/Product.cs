@@ -100,7 +100,7 @@ namespace TheWebShop.Models
                             Console.WriteLine("[2] Pris");
                             Console.WriteLine("[3] Beskrivning");
                             Console.WriteLine("[4] Lagersaldo");
-                            Console.WriteLine("[0] Utvald");
+                            Console.WriteLine("[5] Utvald");
 
                             var answer2 = Console.ReadKey(true).KeyChar;
                             switch (answer2)
@@ -124,7 +124,7 @@ namespace TheWebShop.Models
                                     Console.Write("Ange nytt lagersaldo: ");
                                     changeProduct.Quantity = Managing.TryToParseInput();
                                     break;
-                                case '0':
+                                case '5':
                                     Console.Write(changeProduct.Name + " är ");
                                     Console.WriteLine(changeProduct.ChosenProduct == true ? "utvald produkt" : "ej utvald produkt");
                                     Console.Write("Vill du ändra utvald produkt?: ");
@@ -135,10 +135,7 @@ namespace TheWebShop.Models
                                         dbContext.SaveChanges();
                                     }
                                     break;
-                                default:
-                                    Console.WriteLine("Du valde att inte ändra info om produkten. Tryck valfri tangent");
-                                    Console.ReadKey(true);
-                                    break;
+
                             }
                             dbContext.SaveChanges();
                         }

@@ -37,14 +37,12 @@ namespace TheWebShop.Models
                 switch (choice)
                 {
                     case '1':
-                        // Klar
                         Console.WriteLine("Ange nytt land");
                         var name = Console.ReadLine();
                         dbContext.Countries.Add(new Country { Name = name });
                         dbContext.SaveChanges();
                         break;
                     case '2':
-                        // Klar
                         Console.WriteLine("Ange id på landet du vill ta bort");
                         int id = Managing.TryToParseInput();
 
