@@ -475,20 +475,13 @@ namespace TheWebShop.Models
         private static IEnumerable<IGrouping<Product, Cart>> GetShoppingCart(Customer customer, TheWebShopContext dbContext)
         {
             double totalCost = 0;
-            var result = new List<Cart>();
-            if (customer.FirstName != "Gäst")
-            {
-                result = dbContext.Carts
-                .Where(x => x.CustomerId == customer.Id)
-                .Include(x => x.Product)
-                .ToList();
-            }
-            else
-            {
-                result = customer.Carts.ToList();
-            }
-            var myCart = result
-                .GroupBy(x => x.Product);
+
+            var myCart = dbContext.Carts
+            .Where(x => x.CustomerId == customer.Id)
+            .Include(x => x.Product)
+            .ToList()
+            .GroupBy(x => x.Product);
+
 
             Console.WriteLine(customer.FirstName);
             Console.WriteLine("-----------------------------------------------------");
