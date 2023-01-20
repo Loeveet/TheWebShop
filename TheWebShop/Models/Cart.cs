@@ -42,7 +42,7 @@ namespace TheWebShop.Models
             Console.SetCursorPosition(left, top + 1);
             Console.WriteLine("-----------------------------------------------------");
             Console.SetCursorPosition(left, top + 2);
-            Console.WriteLine($"Totalt {totalCost} kr");
+            Console.WriteLine($"Totalpris: {totalCost} kr, varav moms: {totalCost * 0.25}");
             Console.SetCursorPosition(StartLeft, StartTop);
         }
     }

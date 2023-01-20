@@ -355,7 +355,7 @@ namespace TheWebShop.Models
             var freightCost = dbContext.Freights.Where(x => x.Id == freightMethodId).FirstOrDefault();
             totalCost += freightCost.Price;
             Console.WriteLine($"+ leverans: {freightCost.Price} kr");
-            Console.WriteLine($"Totalpris: {totalCost} kr");
+            Console.WriteLine($"Totalpris: {totalCost} kr, varav moms: {totalCost * 0.25}");
         }
 
         private static void GoToCheckout(Customer customer, TheWebShopContext dbContext, IEnumerable<IGrouping<Product, Cart>> test)
@@ -497,7 +497,7 @@ namespace TheWebShop.Models
                 Console.WriteLine($"[{c.Key.Id}] - {c.Key.Name} à {c.Key.Price} kr - {c.Count()} st - Totalt per produkt {c.Key.Price * c.Count()} kr");
             }
             Console.WriteLine("-----------------------------------------------------");
-            Console.WriteLine($"Totalt {totalCost} kr");
+            Console.WriteLine($"Totalpris: {totalCost} kr, varav moms: {totalCost * 0.25}");
             return myCart;
         }
 
